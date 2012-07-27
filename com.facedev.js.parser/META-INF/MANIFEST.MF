@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Js Parser
+Bundle-SymbolicName: com.facedev.js.parser
+Bundle-Version: 1.0.0
+Bundle-Activator: com.facedev.js.parser.Activator
+Bundle-Vendor: Alex Bereznevatiy
+Require-Bundle: org.eclipse.core.runtime
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-ActivationPolicy: lazy

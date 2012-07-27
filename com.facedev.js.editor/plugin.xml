@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="com.facedev.js.editor.JsEditor"
+            default="false"
+            extensions="js"
+            icon="resources/jsfile.png"
+            id="com.facedev.js.editor"
+            name="Facedev Javascript Editor">
+      </editor>
+   </extension>
+
+</plugin>
