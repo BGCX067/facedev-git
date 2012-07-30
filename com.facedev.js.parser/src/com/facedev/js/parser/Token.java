@@ -38,6 +38,11 @@ public interface Token {
 	 * @return <code>true</code> if this token is string literal
 	 */
 	boolean isStringLiteral();
+	
+	/**
+	 * @return <code>true</code> if this token is regular expression literal
+	 */
+	boolean isRegex();
 
 	/**
 	 * @return <code>true</code> if this token is single- or multi-line comment

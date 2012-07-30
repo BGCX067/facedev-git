@@ -131,4 +131,10 @@ public class ColorManager {
 		
 		WRITE_LOCK.unlock();
 	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		dispose();
+		super.finalize();
+	}
 }

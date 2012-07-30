@@ -19,18 +19,20 @@ public class JsPartitionsScanner extends RuleBasedPartitionScanner {
 	/**
 	 * Token ID for javascript comment.
 	 */
-	public static final String COMMENT_PART = "__bs__comment";
+	public static final String COMMENT_PART = "__js__comment";
 	
 	/**
 	 * Token ID for javascript documentation (jsdoc).
 	 */
-	public static final String BSDOC_PART = "__bs__doc";
+	public static final String JSDOC_PART = "__js__doc";
+	
+	public static final String LITERAL_PART = "__js__literal";
 
 	/**
 	 * @return array of legal content types for this scanner.
 	 */
 	public static String[] getLegalContentTypes() {
-		return new String[] { IDocument.DEFAULT_CONTENT_TYPE, COMMENT_PART, BSDOC_PART } ;
+		return new String[] { IDocument.DEFAULT_CONTENT_TYPE, COMMENT_PART, JSDOC_PART, LITERAL_PART } ;
 	}
 
 	/**
@@ -38,13 +40,23 @@ public class JsPartitionsScanner extends RuleBasedPartitionScanner {
 	 */
 	public JsPartitionsScanner() {
 		IToken comment = new Token(COMMENT_PART);
-		IToken bsDoc = new Token(BSDOC_PART);
+		IToken jsDoc = new Token(JSDOC_PART);
+		IToken literal = new Token(LITERAL_PART);
 		
-		IPredicateRule[] rules = new IPredicateRule[3];
-		rules[1] = new MultiLineRule("/*", "*/", comment);
-		rules[0] = new MultiLineRule("/**", "*/", bsDoc);
-		rules[2] = new SingleLineRule("//", "\n", comment);
+		IPredicateRule[] rules = new IPredicateRule[8];
+		rules[1] = new MultiLineRule("/*", "*/", comment, (char)0, true);
+		rules[0] = new MultiLineRule("/**", "*/", jsDoc, (char)0, true);
+		rules[2] = new SingleLineRule("//", "\n", comment, (char)0, true);
+		rules[3] = new SingleLineRule("'", "'", literal);
+		rules[4] = new SingleLineRule("\"", "\"", literal);
+		rules[5] = new SingleLineRule("'", "\n", literal, '\\', true);
+		rules[6] = new SingleLineRule("\"", "\n", literal, '\\', true);
+		rules[7] = new RegexDetectionRule(literal);
 				
 		setPredicateRules(rules);
+	}
+	
+	boolean isBegin() {
+		return fOffset == 0;
 	}
 }

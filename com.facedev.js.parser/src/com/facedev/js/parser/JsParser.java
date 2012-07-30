@@ -1,7 +1,6 @@
 package com.facedev.js.parser;
 
 import java.io.Reader;
-import java.util.List;
 
 /**
  * Abstract entry point for javascript parser.
@@ -27,8 +26,8 @@ public abstract class JsParser {
 	/**
 	 * Parses file and logs all necessary messages in the logger passed.
 	 * @param logger
-	 * @return list of descriptors read from source.
+	 * @return {@link JsCompilationUnitDescriptor} read from source.
 	 * @throws JsParseException in case of serious trouble.
 	 */
-	public abstract List<JsDescriptor> parse(JsParseLogger logger);
+	public abstract JsCompilationUnitDescriptor parse(JsParseLogger logger);
 }

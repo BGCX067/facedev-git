@@ -4,7 +4,6 @@ import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
-import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WhitespaceRule;
 import org.eclipse.swt.SWT;
@@ -14,7 +13,8 @@ import com.facedev.js.editor.appearance.ColorManager;
 
 /**
  * Default javascript source scanner.
- * Provides syntax coloring for keywords and literals.
+ * Provides syntax coloring for keywords and digit literals.
+ * Also handles unterminated strings.
  * 
  * @author alex.bereznevatiy@gmail.com
  * 
@@ -25,19 +25,15 @@ public class JsScanner extends RuleBasedScanner {
 		Color foreground = ColorManager.getInstance().getColor(ColorManager.KEYWORD_COLOR);
 		IToken keywordToken = new Token(new TextAttribute(foreground, null, SWT.BOLD));
 		
-		IToken string = new Token(new TextAttribute(
-				ColorManager.getInstance().getColor(ColorManager.LITERAL_COLOR)));
-		
 		final JsKeyword[] values = JsKeyword.values();
-		final int length = values.length + 3;
+		final int definedCount = 1;
+		final int length = values.length + definedCount;
 		IRule[] rules = new IRule[length];
 		
-		rules[0] = new SingleLineRule("\"", "\"", string, '\\');
-		rules[1] = new SingleLineRule("'", "'", string, '\\');
-		rules[2] = new WhitespaceRule(new WhitespaceDetector());
+		rules[0] = new WhitespaceRule(new WhitespaceDetector());
 		
-		for (int i = 3; i < length; i++) {
-			rules[i] = new StringMatchRule(values[i - 3].getKeyword(), keywordToken);
+		for (int i = definedCount; i < length; i++) {
+			rules[i] = new StringMatchRule(values[i - definedCount].getKeyword(), keywordToken);
 		}
 
 		setRules(rules);

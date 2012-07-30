@@ -21,7 +21,7 @@ public class JsDocsScanner extends RuleBasedScanner {
 				ColorManager.getInstance().getColor(ColorManager.JSDOC_COLOR)));
 		IRule[] rules = new IRule[1];
 		
-		rules[0] = new MultiLineRule("/**", "*/", docToken);
+		rules[0] = new MultiLineRule("/**", "*/", docToken, (char)0, true);
 		
 		setRules(rules);
 	}

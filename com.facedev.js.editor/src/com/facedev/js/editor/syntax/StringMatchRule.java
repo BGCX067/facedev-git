@@ -5,7 +5,7 @@ import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.Token;
 
-import com.facedev.js.editor.utils.CharUtils;
+import com.facedev.js.parser.CharUtils;
 /**
  * Rule to match {@link CharSequence}s. Useful for keywords search.
  * 
