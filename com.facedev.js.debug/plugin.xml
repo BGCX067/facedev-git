@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension-point id="com.facedev.js.debug" name="Js Debugger" schema="schema/com.facedev.js.debug.exsd"/>
+
+</plugin>

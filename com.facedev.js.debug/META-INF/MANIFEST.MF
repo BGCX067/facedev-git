@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: JS Debugger
+Bundle-SymbolicName: com.facedev.js.debug;singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Vendor: alex.bereznevatiy@gmail.com
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Export-Package: com.facedev.js.debug
+Bundle-Activator: com.facedev.js.debug.internal.DebuggerActivator
+Require-Bundle: org.eclipse.osgi
