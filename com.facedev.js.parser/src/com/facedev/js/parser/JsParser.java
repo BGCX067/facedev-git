@@ -2,6 +2,8 @@ package com.facedev.js.parser;
 
 import java.io.Reader;
 
+import com.facedev.js.parser.internal.JsContextParser;
+
 /**
  * Abstract entry point for javascript parser.
  * 
@@ -20,7 +22,7 @@ public abstract class JsParser {
 	 * @throws JsParseException in case of serious trouble.
 	 */
 	public JsParser create(Reader reader) throws JsParseException {
-		return null;
+		return new JsContextParser(reader);
 	}
 
 	/**
