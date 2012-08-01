@@ -62,4 +62,39 @@ public final class CharUtils {
 		return Character.isLetter(codePoint);
 	}
 	
+	/**
+	 * @param character to test
+	 * @return <code>true</code> if character is javascript expression delimiter.
+	 */
+	public static boolean isExpressionDelimiter(char ch) {
+		return isExpressionDelimiter((int)ch);
+	}
+
+	/**
+	 * @param codePoint to test
+	 * @return <code>true</code> if code point is javascript expression delimiter.
+	 */
+	public static boolean isExpressionDelimiter(int codePoint) {
+		return codePoint == 0x00A ||
+			codePoint == 0x00D || 
+			codePoint == 0x02028 || 
+			codePoint == 0x02029 ||
+			codePoint == ';';
+	}
+
+	/**
+	 * @param character to test
+	 * @return <code>true</code> if character is javascript white space
+	 */
+	public static boolean isWhitespace(char ch) {
+		return isWhitespace((int)ch);
+	}
+	
+	/**
+	 * @param codePoint to test
+	 * @return <code>true</code> if code point is javascript white space
+	 */
+	public static boolean isWhitespace(int codePoint) {
+		return Character.getType(codePoint) == Character.SPACE_SEPARATOR;
+	}
 }

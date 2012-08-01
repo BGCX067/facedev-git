@@ -46,6 +46,11 @@ final class Tokenizer implements TokenSource {
 	 */
 	private static final int TOKEN_REGEX = 32;
 	
+	/**
+	 * Token type for expression delimiters.
+	 */
+	private static final int TOKEN_DELIMITER = 64;
+	
 	private JsSourceReader reader;
 	
 	private ArrayToken current;
@@ -220,6 +225,14 @@ final class Tokenizer implements TokenSource {
 
 		/*
 		 * (non-Javadoc)
+		 * @see com.facedev.js.parser.Token#isExpressionEnd()
+		 */
+		public boolean isExpressionEnd() {
+			return (type & TOKEN_DELIMITER) > 0;
+		}
+
+		/*
+		 * (non-Javadoc)
 		 * @see com.facedev.js.parser.Token#getLine()
 		 */
 		public int getLine() {
@@ -311,6 +324,10 @@ final class Tokenizer implements TokenSource {
 				} else {
 					readComplexOperator(result);
 				}
+			} else if (CharUtils.isExpressionDelimiter(nextChar)) {
+				type = TOKEN_DELIMITER;
+				readExpressionDelimiter();
+				
 			} else {
 				readComplexOperator(result);
 			}
@@ -334,6 +351,17 @@ final class Tokenizer implements TokenSource {
 		} catch (IOException ex) {
 			throw new JsParseException(ex);
 		}
+	}
+
+	private void readExpressionDelimiter() throws IOException {
+		int prev = nextChar;
+		nextChar = reader.read();
+		
+		if (prev == '\r' && nextChar == '\n') {
+			nextChar = reader.read();
+		}
+		currentOffset = 1;
+		currentLine++;
 	}
 
 	private void readRegexLiteral(StringBuilder result) throws IOException {
@@ -492,9 +520,11 @@ final class Tokenizer implements TokenSource {
 	private void readSingleLineComment(StringBuilder result) throws IOException {
 		int c;
 		while ((c = reader.read()) >= 0 && c != '\n' && c != '\r') {
+			currentOffset++;
 			result.append((char)c);
 		}
 
+		currentOffset++;
 		nextChar = c;
 	}
 
@@ -541,18 +571,10 @@ final class Tokenizer implements TokenSource {
 	}
 
 	private void skipWhiteSpaces() throws IOException {
-		int c = nextChar, prev = 0;
+		int c = nextChar;
 
-		while (c >= 0 && Character.isWhitespace(c)) {
-			if (prev == '\r' && c == '\n') {
-				// skip
-			} else if (c == '\n' || c == '\r') {
-				currentOffset = 1;
-				currentLine++;
-			} else {
-				currentOffset++;
-			}
-			prev = c;
+		while (c >= 0 && CharUtils.isWhitespace(c)) {
+			currentOffset++;
 			c = reader.read();
 		}
 

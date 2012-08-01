@@ -48,6 +48,12 @@ public interface Token {
 	 * @return <code>true</code> if this token is single- or multi-line comment
 	 */
 	boolean isComment();
+	
+	/**
+	 * @return <code>true</code> if this token is end of javascript expression
+	 * (either line termination symbol or ';')
+	 */
+	boolean isExpressionEnd();
 
 	/**
 	 * @return line first character of this token belong to.

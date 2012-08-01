@@ -171,6 +171,7 @@ public class TokenizerTestCase {
 				"aaa /* this is other \n multi line \n comment */   bbb"));
 
 		assertEquals("// this is comment", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isExpressionEnd());
 		assertEquals("aaa", tokenizer.next().toString());
 		assertEquals(2, tokenizer.current().getLine());
 		assertEquals(1, tokenizer.current().getOffset());
@@ -194,6 +195,10 @@ public class TokenizerTestCase {
 		assertEquals("// this is comment", tokenizer.next().toString());
 		assertEquals(1, tokenizer.current().getLine());
 		assertEquals(2, tokenizer.current().getOffset());
+		
+		assertTrue(tokenizer.next().isExpressionEnd());
+		assertEquals(1, tokenizer.current().getLine());
+		assertEquals(20, tokenizer.current().getOffset());
 
 		assertEquals("aaa", tokenizer.next().toString());
 		assertEquals(2, tokenizer.current().getLine());
@@ -208,6 +213,10 @@ public class TokenizerTestCase {
 		assertEquals(4, tokenizer.current().getLine());
 		assertEquals(15, tokenizer.current().getOffset());
 
+		assertTrue(tokenizer.next().isExpressionEnd());
+		assertEquals(4, tokenizer.current().getLine());
+		assertEquals(18, tokenizer.current().getOffset());
+
 		assertEquals("ccc", tokenizer.next().toString());
 		assertEquals(5, tokenizer.current().getLine());
 		assertEquals(1, tokenizer.current().getOffset());
@@ -215,6 +224,12 @@ public class TokenizerTestCase {
 		assertEquals("23", tokenizer.next().toString());
 		assertEquals(5, tokenizer.current().getLine());
 		assertEquals(5, tokenizer.current().getOffset());
+		
+		assertTrue(tokenizer.next().isExpressionEnd());
+		assertTrue(tokenizer.next().isExpressionEnd());
+		assertTrue(tokenizer.next().isExpressionEnd());
+		assertTrue(tokenizer.next().isExpressionEnd());
+		assertTrue(tokenizer.next().isExpressionEnd());
 
 		assertEquals("aa", tokenizer.next().toString());
 		assertEquals(10, tokenizer.current().getLine());
