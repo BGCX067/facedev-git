@@ -43,6 +43,13 @@ public class IEJsDebugger implements JsDebugger {
 		return supported != null && supported.booleanValue();
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see com.facedev.js.debug.JsDebugger#dispose()
+	 */
+	public void dispose() {
+	}
+	
 	private static synchronized void registerNatives() {
 		if (Activator.getContext() == null) {
 			supported = null;

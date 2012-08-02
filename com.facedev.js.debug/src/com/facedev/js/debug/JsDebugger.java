@@ -24,4 +24,10 @@ public interface JsDebugger {
 	 * @return <code>true</code> if this debugger is supported on current platform.
 	 */
 	boolean isSupported();
+	
+	/**
+	 * Disposes resources associated with this debugger if any.
+	 * Used for cleanup when this plugin is going to shutdown.
+	 */
+	void dispose();
 }

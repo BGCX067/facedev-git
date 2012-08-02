@@ -2,5 +2,50 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension-point id="com.facedev.js.debug" name="Js Debugger" schema="schema/com.facedev.js.debug.exsd"/>
+   <extension
+         point="org.eclipse.debug.core.breakpoints">
+      <breakpoint
+            class="com.facedev.js.debug.internal.JsBreakpoint"
+            id="com.facedev.js.debug.breakpoint"
+            markerType="facedev.breakpoint.marker"
+            name="Javascript Breakpoint">
+      </breakpoint>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.adapters">
+      <factory
+            adaptableType="com.facedev.js.editor.JsEditor"
+            class="com.facedev.js.debug.internal.JsBreakpointAdapterFactory">
+         <adapter
+               type="org.eclipse.debug.ui.actions.IToggleBreakpointsTarget">
+         </adapter>
+      </factory>
+   </extension>
+   <extension
+         id="facedev.breakpoint.marker"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.debug.core.lineBreakpointMarker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.debugModelPresentations">
+      <debugModelPresentation
+            class="com.facedev.js.debug.internal.JsModelPresentation"
+            id="com.facedev.js.debug.model">
+      </debugModelPresentation>
+   </extension>
+   <extension point="org.eclipse.ui.editorActions">
+		<editorContribution targetID="com.facedev.js.editor"
+			id="com.facedev.js.debug.togglebreakpoint">
+			<action label="Toggle Breakpoint"
+				class="org.eclipse.debug.ui.actions.RulerToggleBreakpointActionDelegate"
+				style="push" actionID="RulerDoubleClick" id="com.facedev.js.debug.togglebreakpoint"/>
+    </editorContribution>
+ </extension>
+
 
 </plugin>
