@@ -327,7 +327,12 @@ final class Tokenizer implements TokenSource {
 			} else if (CharUtils.isExpressionDelimiter(nextChar)) {
 				type = TOKEN_DELIMITER;
 				readExpressionDelimiter();
-				
+			} else if (nextChar == '.') {
+				nextChar = reader.read();
+				if (Character.isDigit(nextChar)) {
+					result.append((char)nextChar);
+					readDigit(result);
+				}
 			} else {
 				readComplexOperator(result);
 			}

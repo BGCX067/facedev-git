@@ -15,6 +15,7 @@ final class JsSourceReader extends Reader {
 	private Reader source;
 	private int[] buf;
 	private int index;
+	private boolean escaped;
 
 	/**
 	 * Creates {@link JsSourceReader} based on other reader.
@@ -39,8 +40,11 @@ final class JsSourceReader extends Reader {
 	@Override
 	public int read() throws IOException {
 		int c = readInternal();
-		if (c == '\\') {
+		if (c == '\\' && !escaped) {
+			escaped = true;
 			c = tryReadEscape();
+		} else {
+			escaped = false;
 		}
 		return c;
 	}
@@ -75,6 +79,8 @@ final class JsSourceReader extends Reader {
 			}
 			rez = rez * 16 + dig;
 		}
+		
+		escaped = (rez == '\\');
 		
 		return rez;
 	}

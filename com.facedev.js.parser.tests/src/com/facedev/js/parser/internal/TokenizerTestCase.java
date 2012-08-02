@@ -152,8 +152,9 @@ public class TokenizerTestCase {
 	@Test
 	public void testLiterals() throws JsParseException {
 		Tokenizer tokenizer = new Tokenizer(new StringReader(
-				" 2aaa 141234 'a' \"asdfjlkasjdf \\\\\\\"\" * /this is pattern/gi "));
+				" .23 2aaa 141234 'a' \"asdfjlkasjdf \\\\\\\"\" * /this is pattern/gi "));
 
+		assertEquals(".23", tokenizer.next().toString());
 		assertEquals("2aaa", tokenizer.next().toString());
 		assertEquals("141234", tokenizer.next().toString());
 		assertEquals("'a'", tokenizer.next().toString());
