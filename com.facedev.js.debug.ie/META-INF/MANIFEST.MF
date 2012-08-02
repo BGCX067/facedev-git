@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Internet Explorer Js Debugger
+Bundle-SymbolicName: com.facedev.js.debug.ie;singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Activator: com.facedev.js.debug.ie.Activator
+Bundle-Vendor: alex.bereznevatiy@gmail.com
+Require-Bundle: org.eclipse.core.runtime,
+ com.facedev.js.debug
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-ActivationPolicy: lazy

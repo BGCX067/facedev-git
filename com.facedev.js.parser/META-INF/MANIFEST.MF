@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Js Parser
-Bundle-SymbolicName: com.facedev.js.parser
+Bundle-SymbolicName: com.facedev.js.parser;singleton:=true
 Bundle-Version: 1.0.0
 Bundle-Activator: com.facedev.js.parser.internal.Activator
 Bundle-Vendor: Alex Bereznevatiy
