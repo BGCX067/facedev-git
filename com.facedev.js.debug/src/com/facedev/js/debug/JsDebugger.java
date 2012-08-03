@@ -21,6 +21,11 @@ public interface JsDebugger {
 	List<JsDebuggerInstance> getRegisteredInstances() throws JsDebuggerException;
 	
 	/**
+	 * @return name of this debugger (usually corresponds to the name of browser with version).
+	 */
+	String getName();
+	
+	/**
 	 * @return <code>true</code> if this debugger is supported on current platform.
 	 */
 	boolean isSupported();

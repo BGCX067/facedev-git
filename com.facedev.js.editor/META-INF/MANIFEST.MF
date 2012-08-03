@@ -9,6 +9,9 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.jface.text,
  org.eclipse.ui.editors,
- com.facedev.js.parser
+ com.facedev.js.parser,
+ org.eclipse.core.resources,
+ org.eclipse.ui.ide,
+ org.eclipse.debug.core
 Export-Package: com.facedev.js.editor
 Bundle-ActivationPolicy: lazy
