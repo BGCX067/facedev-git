@@ -62,6 +62,8 @@ final class Tokenizer implements TokenSource {
 	private int currentOffset;
 	
 	private int previousNonCommentType;
+
+	private KeywordsFastMap keywordsMap;
 	
 	Tokenizer(Reader source) {
 		currentLine = 1;
@@ -143,12 +145,15 @@ final class Tokenizer implements TokenSource {
 		private int line;
 		private int offset;
 		private int type;
+		
+		private String keyword;
 
-		ArrayToken(char[] array, int type, int line, int offset) {
+		ArrayToken(char[] array, int type, int line, int offset, String keyword) {
 			this.array = array;
 			this.line = line;
 			this.offset = offset;
 			this.type = type;
+			this.keyword = keyword;
 		}
 
 		// internal for head token
@@ -225,6 +230,14 @@ final class Tokenizer implements TokenSource {
 
 		/*
 		 * (non-Javadoc)
+		 * @see com.facedev.js.parser.Token#isKeyword(java.lang.String)
+		 */
+		public boolean isKeyword(String keyword) {
+			return this.keyword == keyword;
+		}
+
+		/*
+		 * (non-Javadoc)
 		 * @see com.facedev.js.parser.Token#isExpressionEnd()
 		 */
 		public boolean isExpressionEnd() {
@@ -297,11 +310,12 @@ final class Tokenizer implements TokenSource {
 			int line = currentLine, offset = currentOffset, type = TOKEN_DEFAULT;
 			
 			StringBuilder result = new StringBuilder();
+			String keyword = null;
 
 			result.append((char)nextChar);
 
 			if (CharUtils.isIdentifierStart(nextChar)) {
-				readName(result);
+				keyword = readName(result);
 				type = TOKEN_IDENTIFIER;
 			} else if (nextChar == '\'' || nextChar == '"') {
 				readStringLiteral(result, (char) nextChar);
@@ -342,7 +356,7 @@ final class Tokenizer implements TokenSource {
 			char[] rez = new char[result.length()];
 			result.getChars(0, rez.length, rez, 0);
 
-			ArrayToken token = new ArrayToken(rez, type, line, offset);
+			ArrayToken token = new ArrayToken(rez, type, line, offset, keyword);
 			
 			current.next = token;
 			head.previous = token;
@@ -563,7 +577,7 @@ final class Tokenizer implements TokenSource {
 		}
 	}
 
-	private void readName(StringBuilder result) throws IOException {
+	private String readName(StringBuilder result) throws IOException {
 		int c;
 
 		while ((c = reader.read()) >= 0 && CharUtils.isIdentifierPart(c)) {
@@ -573,6 +587,8 @@ final class Tokenizer implements TokenSource {
 
 		currentOffset++;
 		nextChar = c;
+		
+		return keywordsMap.get(result);
 	}
 
 	private void skipWhiteSpaces() throws IOException {

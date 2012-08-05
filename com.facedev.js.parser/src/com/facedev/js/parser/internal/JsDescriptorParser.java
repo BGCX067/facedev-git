@@ -1,6 +1,7 @@
 package com.facedev.js.parser.internal;
 
 import com.facedev.js.parser.JsDescriptor;
+import com.facedev.js.parser.JsParseException;
 
 /**
  * Provides parsing engine for single descriptor type.
@@ -8,7 +9,7 @@ import com.facedev.js.parser.JsDescriptor;
  * @author alex.bereznevatiy@gmail.com
  *
  */
-public interface JsDescriptorParser {
+interface JsDescriptorParser {
 
 	/**
 	 * Checks if this parser can parse current position. Contract is that token 
@@ -26,7 +27,8 @@ public interface JsDescriptorParser {
 	 * @param source to read tokens
 	 * @return corresponding instance of JsDescriptor or <code>null</code> if
 	 * parse error occurs on this descriptor and it cannot be parsed. 
+	 * @throws JsParseException in case of critical error
 	 */
-	JsDescriptor parse(JsAstParser jsAstParser, TokenSource source);
+	JsDescriptor parse(JsAstParser jsAstParser, TokenSource source) throws JsParseException;
 
 }
