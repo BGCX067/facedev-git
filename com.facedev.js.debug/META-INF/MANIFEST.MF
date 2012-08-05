@@ -8,14 +8,5 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Export-Package: com.facedev.js.debug
 Bundle-Activator: com.facedev.js.debug.internal.DebuggerActivator
 Require-Bundle: org.eclipse.osgi,
- org.eclipse.core.runtime,
- org.eclipse.debug.core,
- org.eclipse.debug.ui,
- org.eclipse.ui.editors,
- org.eclipse.jface,
- org.eclipse.ui.workbench,
- org.eclipse.jface.text,
- org.eclipse.ui.ide,
- org.eclipse.ui,
- com.facedev.js.editor
+ org.eclipse.core.runtime
 Bundle-ActivationPolicy: lazy

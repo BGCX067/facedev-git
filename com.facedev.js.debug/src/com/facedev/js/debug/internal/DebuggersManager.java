@@ -1,5 +1,7 @@
 package com.facedev.js.debug.internal;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,6 +20,7 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
 
 import com.facedev.js.debug.JsDebugger;
+import com.facedev.js.debug.JsDebuggersManager;
 
 /**
  * Singleton for managing debuggers instances.
@@ -25,7 +28,7 @@ import com.facedev.js.debug.JsDebugger;
  * @author alex.bereznevatiy@gmail.com
  *
  */
-public class DebuggersManager implements BundleListener {
+public class DebuggersManager implements BundleListener, JsDebuggersManager {
 	
 	private static final String CLASS_NAME_PROPERTY = "class";
 
@@ -39,11 +42,24 @@ public class DebuggersManager implements BundleListener {
 		debuggers = new HashMap<String, JsDebugger>();
 	}
 	
+	/**
+	 * @return <i>singleton</i> instance of DebuggersManager.
+	 */
 	public static DebuggersManager getInstance() {
 		if (instance == null) {
 			instance = new DebuggersManager();
 		}
 		return instance;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.facedev.js.debug.JsDebuggersManager#getDebuggers()
+	 */
+	public List<JsDebugger> getDebuggers() {
+		ArrayList<JsDebugger> result = new ArrayList<JsDebugger>(debuggers.values());
+		result.trimToSize();
+		return Collections.unmodifiableList(result);
 	}
 
 	/**

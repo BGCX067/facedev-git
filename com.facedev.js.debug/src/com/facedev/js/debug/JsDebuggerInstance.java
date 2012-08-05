@@ -7,5 +7,8 @@ package com.facedev.js.debug;
  *
  */
 public interface JsDebuggerInstance {
-
+	/**
+	 * @return name of this instance (usually corresponding to the browser window or tab title).
+	 */
+	String getName();
 }

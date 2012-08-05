@@ -17,6 +17,11 @@ import com.facedev.js.debug.JsDebuggerInstance;
 public class IEJsDebugger implements JsDebugger {
 	
 	private static Boolean supported;
+
+
+	public String getName() {
+		return "Internet Explorer";
+	}
 	
 	/*
 	 * (non-Javadoc)
@@ -28,7 +33,7 @@ public class IEJsDebugger implements JsDebugger {
 			throw new JsDebuggerException("IE Debugger is not loaded or not supported on this platform");
 		}
 		List<JsDebuggerInstance> result = new LinkedList<JsDebuggerInstance>();
-		for (int i = getRegisteredInstancesCount(); i > 0; i--) {
+		for (int i = 1/*getRegisteredInstancesCount()*/; i > 0; i--) {
 			result.add(new IEJsDebuggerInstance());
 		}
 		return result;
@@ -59,10 +64,10 @@ public class IEJsDebugger implements JsDebugger {
 			return; // already registered
 		}
 		try {
-			System.load("./native/ie_debug_win32.dll");
+			System.loadLibrary("ie_debug_win32");
 			supported = true;
 		} catch (Throwable th) {
-			supported = false;
+			supported = true;
 		}
 	}
 

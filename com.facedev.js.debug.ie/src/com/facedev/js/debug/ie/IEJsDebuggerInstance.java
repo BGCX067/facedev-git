@@ -4,4 +4,8 @@ import com.facedev.js.debug.JsDebuggerInstance;
 
 final class IEJsDebuggerInstance implements JsDebuggerInstance {
 
+	public String getName() {
+		return "Dummy";
+	}
+
 }
