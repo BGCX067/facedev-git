@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Browsers View
+Bundle-SymbolicName: com.facedev.js.debug.browsers; singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Vendor: alex.bereznevatiy@gmail.com
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.ui,
+ com.facedev.js.debug,
+ com.facedev.utils
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: com.facedev.js.debug.browsers.Activator

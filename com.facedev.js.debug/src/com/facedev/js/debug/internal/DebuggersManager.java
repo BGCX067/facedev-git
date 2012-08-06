@@ -8,19 +8,18 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IContributor;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.spi.RegistryContributor;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
 
 import com.facedev.js.debug.JsDebugger;
 import com.facedev.js.debug.JsDebuggersManager;
+import com.facedev.utils.OSGiUtils;
 
 /**
  * Singleton for managing debuggers instances.
@@ -37,9 +36,12 @@ public class DebuggersManager implements BundleListener, JsDebuggersManager {
 	private static DebuggersManager instance;
 	
 	private Map<String, JsDebugger> debuggers;
+	
+	private Map<JsDebugger, IExtension> extensions;
 
 	private DebuggersManager(){
 		debuggers = new HashMap<String, JsDebugger>();
+		extensions = new HashMap<JsDebugger, IExtension>();
 	}
 	
 	/**
@@ -60,6 +62,14 @@ public class DebuggersManager implements BundleListener, JsDebuggersManager {
 		ArrayList<JsDebugger> result = new ArrayList<JsDebugger>(debuggers.values());
 		result.trimToSize();
 		return Collections.unmodifiableList(result);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.facedev.js.debug.JsDebuggersManager#getExtension(com.facedev.js.debug.JsDebugger)
+	 */
+	public IExtension getExtension(JsDebugger debugger) {
+		return extensions.get(debugger);
 	}
 
 	/**
@@ -119,22 +129,13 @@ public class DebuggersManager implements BundleListener, JsDebuggersManager {
 		List<IExtension> result = new LinkedList<IExtension>();
 		
 		for (IExtension extension : extensions) {
-			if (matches(extension.getContributor(), bundle)) {
+			Bundle contributor = OSGiUtils.getBundle(extension);
+			if (contributor != null && contributor.getBundleId() == bundle.getBundleId()) {
 				result.add(extension);
 			}
 		}
 		
 		return result.toArray(new IExtension[result.size()]);
-	}
-
-	private boolean matches(IContributor contributor, Bundle bundle) {
-		if (contributor instanceof RegistryContributor) {
-			RegistryContributor regContributor = (RegistryContributor) contributor;
-			return bundle.getBundleId() == Long.parseLong(regContributor.getActualId());
-		}
-		
-		// revert to non-versioned solution
-		return bundle.getSymbolicName().equals(contributor.getName());
 	}
 
 	private void addDebugger(IExtension extension) {
@@ -145,6 +146,7 @@ public class DebuggersManager implements BundleListener, JsDebuggersManager {
 		try {
 			JsDebugger debugger = (JsDebugger) extension.getConfigurationElements()[0].createExecutableExtension(CLASS_NAME_PROPERTY);
 			debuggers.put(uniqueId, debugger);
+			extensions.put(debugger, extension);
 		} catch (CoreException ex) {
 			DebuggerActivator.getLog().log(new Status(Status.ERROR, extension.getContributor().getName(), 
 					Status.ERROR, "Unable to initialize extension: " + uniqueId, ex));
@@ -157,6 +159,7 @@ public class DebuggersManager implements BundleListener, JsDebuggersManager {
 			return; // already removed
 		}
 		JsDebugger debugger = debuggers.remove(uniqueId);
+		extensions.remove(debugger);
 		debugger.dispose();
 	}
 

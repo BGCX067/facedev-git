@@ -4,6 +4,7 @@ import java.util.List;
 
 /**
  * Common interface for all debuggers that may be registered as extensions of this bundle.
+ * This class should not redefine equals and hash code since this may lead to unpredictable behavior.
  * 
  * @author alex.bereznevatiy@gmail.com
  *

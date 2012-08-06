@@ -18,6 +18,9 @@ public class IEJsDebugger implements JsDebugger {
 	
 	private static Boolean supported;
 
+	public IEJsDebugger() {
+		registerNatives();
+	}
 
 	public String getName() {
 		return "Internet Explorer";
@@ -28,12 +31,11 @@ public class IEJsDebugger implements JsDebugger {
 	 * @see com.facedev.js.debug.JsDebugger#getRegisteredInstances()
 	 */
 	public List<JsDebuggerInstance> getRegisteredInstances() throws JsDebuggerException {
-		registerNatives();
 		if (!isSupported()) {
 			throw new JsDebuggerException("IE Debugger is not loaded or not supported on this platform");
 		}
 		List<JsDebuggerInstance> result = new LinkedList<JsDebuggerInstance>();
-		for (int i = 1/*getRegisteredInstancesCount()*/; i > 0; i--) {
+		for (int i = getRegisteredInstancesCount(); i > 0; i--) {
 			result.add(new IEJsDebuggerInstance());
 		}
 		return result;
@@ -44,7 +46,6 @@ public class IEJsDebugger implements JsDebugger {
 	 * @see com.facedev.js.debug.JsDebugger#isSupported()
 	 */
 	public boolean isSupported() {
-		registerNatives();
 		return supported != null && supported.booleanValue();
 	}
 	
@@ -64,10 +65,12 @@ public class IEJsDebugger implements JsDebugger {
 			return; // already registered
 		}
 		try {
+//			System.loadLibrary("KERNEL32");
+//			System.loadLibrary("msvcrt");
 			System.loadLibrary("ie_debug_win32");
 			supported = true;
 		} catch (Throwable th) {
-			supported = true;
+			supported = false;
 		}
 	}
 

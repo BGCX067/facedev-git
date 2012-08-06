@@ -3,6 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Internet Explorer Js Debugger
 Bundle-SymbolicName: com.facedev.js.debug.ie;singleton:=true
 Bundle-Version: 1.0.0
+Bundle-NativeCode: /lib/ie_debug_win32.dll; osname=win32; osname=win64; processor=x86; processor=x86_64
 Bundle-Activator: com.facedev.js.debug.ie.Activator
 Bundle-Vendor: alex.bereznevatiy@gmail.com
 Require-Bundle: org.eclipse.core.runtime,

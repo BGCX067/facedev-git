@@ -4,7 +4,8 @@
    <extension
          point="com.facedev.js.debug">
       <debugger
-            class="com.facedev.js.debug.ie.IEJsDebugger">
+            class="com.facedev.js.debug.ie.IEJsDebugger"
+            icon="resources/ieicon.png">
       </debugger>
    </extension>
 

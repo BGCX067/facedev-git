@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            name="Facedev"
+            id="com.facedev.js.debug.browsers">
+      </category>
+      <view
+            name="Launched Browsers"
+            icon="icons/browsersview.png"
+            category="com.facedev.js.debug.browsers"
+            class="com.facedev.js.debug.browsers.BrowsersView"
+            id="com.facedev.js.debug.browsers.BrowsersView">
+      </view>
+   </extension>
+
+</plugin>
