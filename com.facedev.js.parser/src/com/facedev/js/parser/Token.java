@@ -28,6 +28,13 @@ public interface Token {
 	 * (or keyword - since no validation is performed on this step).
 	 */
 	boolean isIdentifier();
+	
+	/**
+	 * @param keyword (should be interned with {@link String#intern()}).
+	 * @return <code>true</code> if this token is equal to keyword passed.
+	 * Otherwise returns <code>false</code>.
+	 */
+	boolean isKeyword(String keyword);
 
 	/**
 	 * @return <code>true</code> if this token is digit.
