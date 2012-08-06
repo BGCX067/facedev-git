@@ -6,6 +6,7 @@ import java.io.StringReader;
 
 import org.junit.Test;
 
+import com.facedev.js.parser.JsKeywords;
 import com.facedev.js.parser.JsParseException;
 
 public class TokenizerTestCase {
@@ -245,6 +246,37 @@ public class TokenizerTestCase {
 		Tokenizer tokenizer = new Tokenizer(new StringReader("  d" + seq + "t" + seq + "    "));
 		
 		assertEquals("data", tokenizer.next().toString());
+		
+		assertNull(tokenizer.next());
+	}
+	
+	@Test
+	public void testClassification() throws JsParseException {
+		Tokenizer tokenizer = new Tokenizer(new StringReader(
+				"   /**/ // aa \n 25 .25e3 aaa case ; \n \r /regex/ig" +
+				" / 'case' \"if\"     "));
+		
+		assertTrue(tokenizer.next().isComment());
+		assertTrue(tokenizer.next().isComment());
+		
+		assertTrue(tokenizer.next().isExpressionEnd());
+		
+		assertTrue(tokenizer.next().isDigitLiteral());
+		assertTrue(tokenizer.next().isDigitLiteral());
+		
+		assertTrue(tokenizer.next().isIdentifier());
+		assertFalse(tokenizer.next().isIdentifier());
+		assertTrue(tokenizer.current().isKeyword(JsKeywords.KEYWORD_CASE));
+		
+		assertTrue(tokenizer.next().isExpressionEnd());
+		assertTrue(tokenizer.next().isExpressionEnd());
+		assertTrue(tokenizer.next().isExpressionEnd());
+		
+		assertTrue(tokenizer.next().isRegex());
+		assertFalse(tokenizer.next().isRegex());
+		
+		assertTrue(tokenizer.next().isStringLiteral());
+		assertTrue(tokenizer.next().isStringLiteral());
 		
 		assertNull(tokenizer.next());
 	}

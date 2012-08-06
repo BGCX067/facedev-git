@@ -51,6 +51,11 @@ final class Tokenizer implements TokenSource {
 	 */
 	private static final int TOKEN_DELIMITER = 64;
 	
+	/**
+	 * Token type for keywords
+	 */
+	private static final int TOKEN_KEYWORD = 128;
+	
 	private JsSourceReader reader;
 	
 	private ArrayToken current;
@@ -70,6 +75,7 @@ final class Tokenizer implements TokenSource {
 		
 		reader = new JsSourceReader(source);
 		current = head = new ArrayToken();
+		keywordsMap = new KeywordsFastMap();
 	}
 	
 	/*
@@ -316,7 +322,7 @@ final class Tokenizer implements TokenSource {
 
 			if (CharUtils.isIdentifierStart(nextChar)) {
 				keyword = readName(result);
-				type = TOKEN_IDENTIFIER;
+				type = keyword == null ? TOKEN_IDENTIFIER : TOKEN_KEYWORD;
 			} else if (nextChar == '\'' || nextChar == '"') {
 				readStringLiteral(result, (char) nextChar);
 				type = TOKEN_STRING_LITERAL;
@@ -333,8 +339,10 @@ final class Tokenizer implements TokenSource {
 				} else if (nextChar == '/') {
 					readSingleLineComment(result);
 					type = TOKEN_COMMENT;
-				} else if (previousNonCommentType == TOKEN_DEFAULT) {
+				} else if (previousNonCommentType == TOKEN_DEFAULT ||
+						previousNonCommentType == TOKEN_DELIMITER) {
 					readRegexLiteral(result);
+					type = TOKEN_REGEX;
 				} else {
 					readComplexOperator(result);
 				}
@@ -346,6 +354,7 @@ final class Tokenizer implements TokenSource {
 				if (Character.isDigit(nextChar)) {
 					result.append((char)nextChar);
 					readDigit(result);
+					type = TOKEN_DIGIT_LITERAL;
 				}
 			} else {
 				readComplexOperator(result);
