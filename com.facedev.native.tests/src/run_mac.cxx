@@ -138,7 +138,7 @@ static int stderrHolder;
 
 
 
-void bsInitPlatform(void) {
+void tst_inner::initPlatform(void) {
 	SIG_ATTACH(SIGILL);
 	SIG_ATTACH(SIGABRT);
 	SIG_ATTACH(SIGTRAP);
@@ -184,7 +184,7 @@ void bsInitPlatform(void) {
 
 
 
-void bsReleasePlatform(void) {
+void tst_inner::releasePlatform(void) {
 	SIG_DETACH(SIGILL);
 	SIG_DETACH(SIGABRT);
 	SIG_DETACH(SIGTRAP);

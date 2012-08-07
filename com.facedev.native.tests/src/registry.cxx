@@ -178,8 +178,8 @@ static const char* createTestName(const char* name, const char* fileName) {
 	}
 
 	size_t i = 0,
-		j = baseLength - 1,
-		lastSlash = -1;
+		j = baseLength - 1;
+	int lastSlash = -1;
 
 	while (++j < fileNameLength) {
 		if (fileName[j] == '\\' || fileName[j] == '/') {
@@ -190,7 +190,7 @@ static const char* createTestName(const char* name, const char* fileName) {
 		}
 	}
 	nameBuf[i] = 0;
-	size_t lastDot = strrchr(nameBuf, '.') - nameBuf;
+	int lastDot = strrchr(nameBuf, '.') - nameBuf;
 
 	if (lastDot > lastSlash) {
 		i = lastDot;

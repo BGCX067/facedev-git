@@ -8,6 +8,5 @@
 #include "../include/test.h"
 
 TEST(add) {
-	test_fail("Failed");
+	test_not_implemented();
 }
-
