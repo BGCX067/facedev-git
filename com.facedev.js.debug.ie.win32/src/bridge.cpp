@@ -9,6 +9,7 @@
 #include <iostream>
 #include "windows.h"
 
+
 JNIEXPORT jint JNICALL Java_com_facedev_js_debug_ie_IEJsDebugger_getRegisteredInstancesCount
   (JNIEnv *, jclass) {
 	size_t MAX_SIZE = 1024;

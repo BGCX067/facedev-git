@@ -65,8 +65,6 @@ public class IEJsDebugger implements JsDebugger {
 			return; // already registered
 		}
 		try {
-//			System.loadLibrary("KERNEL32");
-//			System.loadLibrary("msvcrt");
 			System.loadLibrary("ie_debug_win32");
 			supported = true;
 		} catch (Throwable th) {
