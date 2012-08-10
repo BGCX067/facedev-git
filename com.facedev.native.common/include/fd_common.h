@@ -9,6 +9,5 @@
 #define FD_COMMON_H_
 
 #include "fd_lang.h"
-#include "fd_list.h";
 
 #endif /* FD_COMMON_H_ */

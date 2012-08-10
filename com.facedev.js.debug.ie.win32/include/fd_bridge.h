@@ -9,6 +9,7 @@
 #define FD_BRIDGE_H_
 
 #include "../../com.facedev.native.common/include/fd_common.h"
+#include <vector>
 #include "fd_ie.h"
 
 /*
@@ -86,9 +87,9 @@ public:
 
 	/*
 	 * Enumerates all fd_ieinstance instances registered on current moment.
-	 * Resulting list is dynamically allocated and should be released by client.
+	 * Resulting vector is dynamically allocated and should be released by client.
 	 */
-	const fd_list<fd_ieinstance*>* enumerate();
+	const std::vector<fd_ieinstance*>* enumerate();
 
 	/*
 	 * Attaches listener to watch for the instances changes.

@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 
-#define fd_null ((void*)0)
+#define fd_null 0
 
 
 typedef uint32_t fd_uint;
