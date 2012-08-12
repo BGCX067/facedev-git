@@ -266,13 +266,45 @@ final class Tokenizer implements TokenSource {
 			return offset;
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * @see com.facedev.js.parser.Token#writeTo(java.lang.StringBuilder)
+		 */
 		public void writeTo(StringBuilder result) {
 			result.append(array);
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.CharSequence#length()
+		 */
+		public int length() {
+			return array.length;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.CharSequence#charAt(int)
+		 */
+		public char charAt(int index) {
+			return array[index];
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.CharSequence#subSequence(int, int)
+		 */
+		public CharSequence subSequence(int start, int end) {
+			return new String(array, start, end - start);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
 		@Override
 		public String toString() {
-			return new String(array);
+			return keyword == null ? new String(array) : keyword;
 		}
 
 		/*

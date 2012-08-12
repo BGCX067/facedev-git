@@ -6,5 +6,5 @@ package com.facedev.js.parser;
  * @author alex.bereznevatiy@gmail.com
  *
  */
-public interface NullLiteralDescriptor extends JsDescriptor {
+public interface JsNullLiteralDescriptor extends JsDescriptor {
 }

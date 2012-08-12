@@ -294,6 +294,11 @@ public interface JsKeywords {
 	String KEYWORD_TYPEOF = "typeof";
 	
 	/**
+	 * 'undefined' keyword represents undefined literal.
+	 */
+	String KEYWORD_UNDEFINED = "undefined";
+	
+	/**
 	 * 'use' keyword is reserved for the next version of javascript (Javascript 2).
 	 */
 	String KEYWORD_USE = "use";

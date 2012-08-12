@@ -1,6 +1,7 @@
 package com.facedev.js.parser.internal;
 
 import com.facedev.js.parser.JsDescriptor;
+import com.facedev.js.parser.JsKeywords;
 import com.facedev.js.parser.JsParseException;
 import com.facedev.js.parser.Token;
 
@@ -11,7 +12,7 @@ import com.facedev.js.parser.Token;
  * @author alex.bereznevatiy@gmail.com
  *
  */
-class PrimaryExpressionDescriptorParser implements JsDescriptorParser {
+final class PrimaryExpressionDescriptorParser implements JsDescriptorParser {
 
 	/*
 	 * (non-Javadoc)
@@ -19,7 +20,7 @@ class PrimaryExpressionDescriptorParser implements JsDescriptorParser {
 	 */
 	public boolean isApplicable(TokenSource source) {
 		Token token = source.current();
-		return token.isIdentifier() || token.isKeyword("this") ||
+		return token.isIdentifier() || token.isKeyword(JsKeywords.KEYWORD_THIS) ||
 				token.isStringLiteral() || token.isDigitLiteral() ||
 				token.isRegex() || token.equalsTo('(') 
 				|| isArrayLiteral(token) || isObjectLiteral(token);
@@ -41,8 +42,25 @@ class PrimaryExpressionDescriptorParser implements JsDescriptorParser {
 	 */
 	public JsDescriptor parse(JsAstParser jsAstParser, TokenSource source)
 			throws JsParseException {
-		// TODO Auto-generated method stub
-		return null;
+		Token tok = source.current();
+		if (tok.isIdentifier()) {
+			return new JsIdentifierdescriptorImpl(tok);
+		} else if (tok.isKeyword(JsKeywords.KEYWORD_THIS)) {
+			return new JsIdentifierdescriptorImpl(tok);
+		} else if (tok.equalsTo('{')) {
+			// parse JSON
+		} else if (tok.equalsTo('[')) {
+			// parse array literal
+		} else if (tok.isStringLiteral()) {
+			return new JsStringLiteralDescriptorImpl(tok);
+		} else if (tok.isDigitLiteral()) {
+			return new JsNumberLiteralDescriptorImpl(tok);
+		} else if (tok.isRegex()) {
+			// parse regex
+		} else if (tok.equalsTo('(')) {	
+			// parse expression
+		}// other literals ?
+		throw new JsParseException("Wrong token has been passed: " + tok);
 	}
 
 }

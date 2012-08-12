@@ -66,6 +66,7 @@ public enum JsKeyword {
 	TRUE, // true
 	TRY, // try
 	TYPEOF, // typeof
+	UNDEFINED, // undefined
 	USE, // use (**)
 	VAR, // var
 	VOID, // void

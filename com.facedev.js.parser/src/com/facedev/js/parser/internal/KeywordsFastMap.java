@@ -104,6 +104,7 @@ final class KeywordsFastMap implements JsKeywords {
 			put(KEYWORD_TRUE);
 			put(KEYWORD_TRY);
 			put(KEYWORD_TYPEOF);
+			put(KEYWORD_UNDEFINED);
 			put(KEYWORD_USE);
 			put(KEYWORD_VAR);
 			put(KEYWORD_VOID);

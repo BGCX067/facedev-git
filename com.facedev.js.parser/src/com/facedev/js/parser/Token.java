@@ -7,7 +7,7 @@ package com.facedev.js.parser;
  * @author alex.bereznevatiy@gmail.com
  *
  */
-public interface Token {
+public interface Token extends CharSequence {
 
 	/**
 	 * @param str - {@link CharSequence} to test for equality

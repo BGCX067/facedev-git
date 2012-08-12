@@ -162,7 +162,7 @@ public:
 	 * Returns value previously associated with key.
 	 */
 	V remove(K key) {
-		if ( (count * 8) < length ) {
+		if ( (count * 8) < length && length > 10) {// TODO: check rehash
 			rehash(count * 2);
 		}
 		size_t hc = hash(key) % length;

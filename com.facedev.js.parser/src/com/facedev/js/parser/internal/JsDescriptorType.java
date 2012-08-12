@@ -27,7 +27,7 @@ enum JsDescriptorType {
 	/**
 	 * Represents primary expression as defined in ECMA-262 specification (chapter 11.1)
 	 */
-	PRIMARY_EXPRESSION(null);
+	PRIMARY_EXPRESSION(new PrimaryExpressionDescriptorParser());
 	
 	private JsDescriptorParser parser;
 	

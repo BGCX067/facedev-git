@@ -31,9 +31,16 @@ public class JsAstParser extends JsParser {
 	 */
 	@Override
 	public JsCompilationUnitDescriptor parse(JsParseLogger logger) throws JsParseException {
-		CommentsTokenFilter filter = new CommentsTokenFilter(new Tokenizer(reader));
+		TokenSource source = createTokenSource();
 		this.logger = logger;
-		return (JsCompilationUnitDescriptor) expect(filter, JsDescriptorType.COMPILATION_UNIT);
+		return (JsCompilationUnitDescriptor) expect(source, JsDescriptorType.COMPILATION_UNIT);
+	}
+
+	/**
+	 * @return new token source for the reader associated
+	 */
+	TokenSource createTokenSource() {
+		return new CommentsTokenFilter(new Tokenizer(reader));
 	}
 
 	/**
@@ -57,10 +64,12 @@ public class JsAstParser extends JsParser {
 				return type.parse(this, source);
 			}
 		}
-		while (!source.current().isExpressionEnd()) {
+		while (source.current() != null && !source.current().isExpressionEnd()) {
 			source.next();
 		}
-		source.next();
+		if (source.current() != null) {
+			source.next();
+		}
 		return null;
 	}
 
