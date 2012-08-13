@@ -2,6 +2,8 @@ package com.facedev.testdev.editors;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -16,6 +18,7 @@ public class TestCaseStepWidget extends Composite {
 	private static final int SKIP_SCROLL_EVENTS_NUMBER = 2;
 	
 	private Text text;
+	private Composite includeProject;
 
 	public TestCaseStepWidget(final Composite parent, int number) {
 		super(parent, SWT.NONE);
@@ -25,17 +28,45 @@ public class TestCaseStepWidget extends Composite {
 		label.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, false, false, 1, 1));
 		label.setText(String.valueOf(number) + ".");
 		
-		Combo combo = new Combo(this, SWT.NONE);
+		final Combo combo = new Combo(this, SWT.NONE);
+		combo.add("Text step");
+		combo.add("Include testcase");
+		combo.select(0);
 		combo.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 
 		Composite container = new Composite(this, SWT.NONE);
-		container.setLayout(new StackLayout());
+		final StackLayout layout = new StackLayout();
+		container.setLayout(layout);
 		
 		createTextField(container, parent);
+		createIncludeProjectField(container);
 		
-		GridData gd_text = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
+		layout.topControl = text;
+		
+		final GridData gd_text = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 		gd_text.heightHint = 50;
 		container.setLayoutData(gd_text);
+		
+		combo.addSelectionListener(new SelectionListener() {
+			
+			public void widgetSelected(SelectionEvent e) {
+				layout.topControl = combo.getSelectionIndex() > 0 ? includeProject : text;
+				TestCaseStepWidget.this.layout();
+			}
+			
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+		});
+	}
+
+	private void createIncludeProjectField(Composite container) {
+		includeProject = new Composite(container, SWT.NONE);
+		includeProject.setLayout(null);
+		
+		Combo combo = new Combo(includeProject, SWT.NONE);
+		combo.setBounds(5, 5, 200, 20);
+		combo.add("Test A");
+		combo.add("Test B");
 	}
 
 	private void createTextField(final Composite container, final Composite parent) {
