@@ -10,6 +10,7 @@
 
 #include "../../com.facedev.native.common/include/fd_common.h"
 #include <vector>
+#include <guiddef.h>
 #include "fd_ie.h"
 
 /*
@@ -59,7 +60,7 @@ extern const GUID FACEDEV_IE_BHO_GUID = { 0x82e196fe, 0xef7c, 0x4d76, { 0xb6, 0x
  */
 class fd_bridge {
 private:
-	static fd_bridge instance;
+	static fd_bridge* instance;
 	fd_bridge(){}
 	~fd_bridge(){}
 public:
