@@ -2,11 +2,6 @@ package com.facedev.testdev.editors;
 
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
@@ -30,6 +25,7 @@ public class TestCaseEditor extends MultiPageEditorPart {
 	
 	private GeneralTestCaseInformationTab generalInfoTab;
 	private TestCaseStepsTab stepsTab;
+	private TestCaseRunsTab runsTab;
 
 	public TestCaseEditor() {
 		super();
@@ -57,19 +53,9 @@ public class TestCaseEditor extends MultiPageEditorPart {
 	}
 	
 	private void createRunsPage() {
-		Composite composite = new Composite(getContainer(), SWT.NONE);
-		GridLayout layout = new GridLayout();
-		composite.setLayout(layout);
-		layout.numColumns = 4;
-
-		Label label = new Label(composite, SWT.NONE);
+		runsTab = new TestCaseRunsTab(getContainer());
 		
-		GridData gd = new GridData(GridData.BEGINNING);
-//		gd.horizontalSpan = 2;
-		label.setLayoutData(gd);
-		label.setText("Runs:");
-		
-		int index = addPage(composite);
+		int index = addPage(runsTab);
 		setPageText(index, "Runs");
 	}
 

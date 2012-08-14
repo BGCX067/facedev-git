@@ -1,24 +1,34 @@
 package com.facedev.testdev.editors;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Combo;
+import org.eclipse.ui.dialogs.ElementTreeSelectionDialog;
+import org.eclipse.ui.model.BaseWorkbenchContentProvider;
+import org.eclipse.ui.model.WorkbenchLabelProvider;
+
+import swing2swt.layout.FlowLayout;
 
 public class TestCaseStepWidget extends Composite {
 	private static final int SKIP_SCROLL_EVENTS_NUMBER = 2;
 	
 	private Text text;
-	private Composite includeProject;
+	private Composite includeTest;
+	private Label selectedTestLabel;
 
 	public TestCaseStepWidget(final Composite parent, int number) {
 		super(parent, SWT.NONE);
@@ -34,7 +44,7 @@ public class TestCaseStepWidget extends Composite {
 		combo.select(0);
 		combo.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 
-		Composite container = new Composite(this, SWT.NONE);
+		final Composite container = new Composite(this, SWT.NONE);
 		final StackLayout layout = new StackLayout();
 		container.setLayout(layout);
 		
@@ -50,7 +60,8 @@ public class TestCaseStepWidget extends Composite {
 		combo.addSelectionListener(new SelectionListener() {
 			
 			public void widgetSelected(SelectionEvent e) {
-				layout.topControl = combo.getSelectionIndex() > 0 ? includeProject : text;
+				layout.topControl = combo.getSelectionIndex() > 0 ? includeTest : text;
+				container.layout();
 				TestCaseStepWidget.this.layout();
 			}
 			
@@ -59,14 +70,61 @@ public class TestCaseStepWidget extends Composite {
 		});
 	}
 
-	private void createIncludeProjectField(Composite container) {
-		includeProject = new Composite(container, SWT.NONE);
-		includeProject.setLayout(null);
+	private void createIncludeProjectField(final Composite container) {
+		includeTest = new Composite(container, SWT.NONE);
+		includeTest.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
 		
-		Combo combo = new Combo(includeProject, SWT.NONE);
-		combo.setBounds(5, 5, 200, 20);
-		combo.add("Test A");
-		combo.add("Test B");
+		Button btnOpenFile = new Button(includeTest, SWT.NONE);
+		btnOpenFile.setText("Open File");
+		
+		btnOpenFile.addSelectionListener(new SelectionListener() {
+			
+			public void widgetSelected(SelectionEvent e) {
+				FileDialog dialog = new FileDialog(getShell(), SWT.OPEN);
+				dialog.setText("Select testcase file");
+				String file = dialog.open();
+				if (file == null || file.length() == 0) {
+					return;
+				}
+				selectedTestLabel.setText(file);
+				container.layout();
+				System.out.println("File: " + file);
+			}
+			
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+		});
+		
+		
+		
+		Button btnOpenWorkspace = new Button(includeTest, SWT.NONE);
+		btnOpenWorkspace.setText("Open workspace");
+		
+		btnOpenWorkspace.addSelectionListener(new SelectionListener() {
+			
+			public void widgetSelected(SelectionEvent e) {
+				ElementTreeSelectionDialog dialog = new ElementTreeSelectionDialog(getShell(), 
+						new WorkbenchLabelProvider(), new BaseWorkbenchContentProvider());
+				dialog.setTitle("Select testcase file");
+				dialog.setMessage("Select testcase to include:");
+				dialog.setInput(ResourcesPlugin.getWorkspace().getRoot());
+				dialog.open();
+				IFile file = (IFile) dialog.getFirstResult();
+				if (file == null) {
+					return;
+				}
+				
+				selectedTestLabel.setText(file.getFullPath().toOSString());
+				container.layout();
+				System.out.println("Workspace: " + file.getRawLocation().toOSString());
+			}
+			
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+		});
+		
+		selectedTestLabel = new Label(includeTest, SWT.NONE);
+		selectedTestLabel.setText("Not selected...");
 	}
 
 	private void createTextField(final Composite container, final Composite parent) {
@@ -94,5 +152,4 @@ public class TestCaseStepWidget extends Composite {
 			}
 		});
 	}
-
 }
