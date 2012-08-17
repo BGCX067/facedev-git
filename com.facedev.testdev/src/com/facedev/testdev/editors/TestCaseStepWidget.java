@@ -21,6 +21,8 @@ import org.eclipse.ui.dialogs.ElementTreeSelectionDialog;
 import org.eclipse.ui.model.BaseWorkbenchContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 
+import com.facedev.testdev.model.TestCaseStep;
+
 import swing2swt.layout.FlowLayout;
 
 public class TestCaseStepWidget extends Composite {
@@ -30,7 +32,7 @@ public class TestCaseStepWidget extends Composite {
 	private Composite includeTest;
 	private Label selectedTestLabel;
 
-	public TestCaseStepWidget(final Composite parent, int number) {
+	public TestCaseStepWidget(final Composite parent, TestCaseStep step, int number) {
 		super(parent, SWT.NONE);
 		setLayout(new GridLayout(2, false));
 		

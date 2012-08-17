@@ -40,14 +40,14 @@ public class TestCaseEditor extends MultiPageEditorPart {
 	}
 
 	private void createGeneralInformationPage() {
-		generalInfoTab = new GeneralTestCaseInformationTab(getContainer());
+		generalInfoTab = new GeneralTestCaseInformationTab(getContainer(), testcase);
 		
 		int index = addPage(generalInfoTab);
 		setPageText(index, "General");
 	}
 	
 	private void createStepsPage() {
-		stepsTab = new TestCaseStepsTab(getContainer());		
+		stepsTab = new TestCaseStepsTab(getContainer(), testcase);		
 		int index = addPage(stepsTab);
 		setPageText(index, "Steps");
 	}

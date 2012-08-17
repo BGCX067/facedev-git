@@ -1,5 +1,7 @@
 package com.facedev.testdev.editors;
 
+import java.util.List;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.layout.FillLayout;
@@ -9,22 +11,22 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
+import com.facedev.testdev.model.TestCase;
+import com.facedev.testdev.model.TestCaseStep;
+import com.facedev.utils.BeanUtils;
+
 public class TestCaseStepsTab extends ScrolledComposite {
 	
+	private Composite stepsComposite;
+	private List<TestCaseStep> testcaseSteps;
 
-	public TestCaseStepsTab(Composite parent) {
+	public TestCaseStepsTab(Composite parent, final TestCase testcase) {
 		super(parent, SWT.V_SCROLL);
 		setLayout(new FillLayout());
-		Composite composite = new Composite(this, SWT.NONE);
-		composite.setLayout(new GridLayout(1, false));
-		setContent(composite);
-		
-		for (int i = 1; i < 15; i++) {
-			TestCaseStepWidget step = new TestCaseStepWidget(composite, i);
-			step.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-		}
+		stepsComposite = new Composite(this, SWT.NONE);
+		stepsComposite.setLayout(new GridLayout(1, false));
+		setContent(stepsComposite);
 
-		setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		setExpandHorizontal(true);
 		setExpandVertical(true);
 		
@@ -39,7 +41,23 @@ public class TestCaseStepsTab extends ScrolledComposite {
 			    }
 		    }
 		};
-		composite.addListener(SWT.MouseWheel, listener);
+		stepsComposite.addListener(SWT.MouseWheel, listener);
+		
+		BeanUtils.bind(testcase, this, "steps", "testcaseSteps");
 	}
 
+	public List<TestCaseStep> getTestcaseSteps() {
+		return testcaseSteps;
+	}
+
+	public void setTestcaseSteps(List<TestCaseStep> testcaseSteps) {
+		this.testcaseSteps = testcaseSteps;
+		int index = 1;
+		for (TestCaseStep step : testcaseSteps) {
+			TestCaseStepWidget stepWidget = new TestCaseStepWidget(stepsComposite, step, index++);
+			stepWidget.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		}
+		
+		setMinSize(stepsComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+	}
 }

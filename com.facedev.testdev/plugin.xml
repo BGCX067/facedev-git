@@ -7,7 +7,7 @@
       <editor
             name="TestCase Editor"
             extensions="tst"
-            icon="icons/sample.gif"
+            icon="icons/tstfile.png"
             contributorClass="com.facedev.testdev.editors.TestCaseEditorContributor"
             class="com.facedev.testdev.editors.TestCaseEditor"
             id="com.facedev.testdev.editors.TestCaseEditor">
@@ -21,7 +21,7 @@
       </category>
       <wizard
             name="New TestCase"
-            icon="icons/sample.gif"
+            icon="icons/tstfile.png"
             category="com.facedev.testdev"
             class="com.facedev.testdev.wizards.NewTestCaseWizard"
             id="com.facedev.testdev.wizards.NewTestCaseWizard">
