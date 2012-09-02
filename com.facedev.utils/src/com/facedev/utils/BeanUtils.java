@@ -6,8 +6,6 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import javax.management.RuntimeErrorException;
-
 /**
  * Common utilities to work with java beans.
  * 

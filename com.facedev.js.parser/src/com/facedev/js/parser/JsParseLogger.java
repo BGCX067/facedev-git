@@ -22,14 +22,16 @@ public interface JsParseLogger {
 	/**
 	 * Logs message of level specified for single token.
 	 * @param level
+	 * @param message
 	 * @param token
 	 */
-	void log(Level level, Token token);
+	void log(Level level, String message, Token token);
 	
 	/**
 	 * Logs message of level for descriptor.
-	 * @param kind
+	 * @param level
+	 * @param message
 	 * @param descriptor
 	 */
-	void log(Level kind, JsDescriptor descriptor);
+	void log(Level level, String message, JsDescriptor descriptor);
 }

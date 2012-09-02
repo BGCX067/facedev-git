@@ -32,7 +32,7 @@ public class JsAstParser extends JsParser {
 	@Override
 	public JsCompilationUnitDescriptor parse(JsParseLogger logger) throws JsParseException {
 		TokenSource source = createTokenSource();
-		this.logger = logger;
+		setLogger(logger);
 		return (JsCompilationUnitDescriptor) expect(source, JsDescriptorType.COMPILATION_UNIT);
 	}
 
@@ -78,5 +78,9 @@ public class JsAstParser extends JsParser {
 	 */
 	JsParseLogger getLogger() {
 		return logger;
+	}
+	
+	void setLogger(JsParseLogger logger) {
+		this.logger = logger;
 	}
 }
