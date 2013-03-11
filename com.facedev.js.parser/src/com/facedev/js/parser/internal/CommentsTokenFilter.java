@@ -58,4 +58,8 @@ final class CommentsTokenFilter implements TokenSource {
 	public void commit() {
 		source.commit();
 	}
+
+	public void rollback(Token to) {
+		source.rollback(to);
+	}
 }

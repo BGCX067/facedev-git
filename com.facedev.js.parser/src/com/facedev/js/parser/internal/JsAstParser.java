@@ -3,7 +3,6 @@ package com.facedev.js.parser.internal;
 import java.io.Reader;
 
 import com.facedev.js.parser.JsCompilationUnitDescriptor;
-import com.facedev.js.parser.JsDescriptor;
 import com.facedev.js.parser.JsParseException;
 import com.facedev.js.parser.JsParseLogger;
 import com.facedev.js.parser.JsParser;
@@ -31,9 +30,9 @@ public class JsAstParser extends JsParser {
 	 */
 	@Override
 	public JsCompilationUnitDescriptor parse(JsParseLogger logger) throws JsParseException {
-		TokenSource source = createTokenSource();
+//		TokenSource source = createTokenSource();
 		this.logger = logger;
-		return (JsCompilationUnitDescriptor) expect(source, JsDescriptorType.COMPILATION_UNIT);
+		return null;/*(JsCompilationUnitDescriptor) expect(source, JsDescriptorType.COMPILATION_UNIT);*/
 	}
 
 	/**
@@ -58,20 +57,20 @@ public class JsAstParser extends JsParser {
 	 * is parsed.
 	 * @throws JsParseException in case of troubles
 	 */
-	JsDescriptor expect(TokenSource source, JsDescriptorType...types) throws JsParseException {
-		for (JsDescriptorType type : types) {
-			if (type.isApplicable(source)) {
-				return type.parse(this, source);
-			}
-		}
-		while (source.current() != null && !source.current().isExpressionEnd()) {
-			source.next();
-		}
-		if (source.current() != null) {
-			source.next();
-		}
-		return null;
-	}
+//	JsDescriptor expect(TokenSource source, JsDescriptorType...types) throws JsParseException {
+//		for (JsDescriptorType type : types) {
+//			if (type.isApplicable(source)) {
+//				return type.parse(this, source);
+//			}
+//		}
+//		while (source.current() != null && !source.current().isExpressionEnd()) {
+//			source.next();
+//		}
+//		if (source.current() != null) {
+//			source.next();
+//		}
+//		return null;
+//	}
 
 	/**
 	 * @return logger associated with this parser.

@@ -36,4 +36,10 @@ interface TokenSource {
 	 * internal validation for the parser to avoid the same token be interpreted twice.
 	 */
 	void commit();
+	
+	/**
+	 * Moves position of the tokenizer back to the token passed.
+	 * @param token to rollback to
+	 */
+	void rollback(Token to);
 }

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IExtension;
@@ -18,6 +19,7 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
 
 import com.facedev.js.debug.JsDebugger;
+import com.facedev.js.debug.JsDebuggerChangeListener;
 import com.facedev.js.debug.JsDebuggersManager;
 import com.facedev.utils.OSGiUtils;
 
@@ -38,6 +40,8 @@ public class DebuggersManager implements BundleListener, JsDebuggersManager {
 	private Map<String, JsDebugger> debuggers;
 	
 	private Map<JsDebugger, IExtension> extensions;
+	
+	private List<JsDebuggerChangeListener> listeners;
 
 	private DebuggersManager(){
 		debuggers = new HashMap<String, JsDebugger>();
@@ -91,6 +95,20 @@ public class DebuggersManager implements BundleListener, JsDebuggersManager {
 		} else if (event.getType() == BundleEvent.STOPPING) {
 			removeDebuggers(event.getBundle());
 		}
+	}
+
+	public void addJsDebuggerChangeListener(JsDebuggerChangeListener listener) {
+		if (listeners == null) {
+			listeners = new CopyOnWriteArrayList<JsDebuggerChangeListener>();
+		}
+		listeners.add(listener);
+	}
+
+	public void removeJsDebuggerChangeListener(JsDebuggerChangeListener listener) {
+		if (listeners == null) {
+			return;
+		}
+		listeners.remove(listener);
 	}
 
 	private void addDebuggers(Bundle bundle) {
@@ -147,6 +165,7 @@ public class DebuggersManager implements BundleListener, JsDebuggersManager {
 			JsDebugger debugger = (JsDebugger) extension.getConfigurationElements()[0].createExecutableExtension(CLASS_NAME_PROPERTY);
 			debuggers.put(uniqueId, debugger);
 			extensions.put(debugger, extension);
+			notifyListeners(debugger, JsDebuggerChangeListener.State.ADDED);
 		} catch (CoreException ex) {
 			DebuggerActivator.getLog().log(new Status(Status.ERROR, extension.getContributor().getName(), 
 					Status.ERROR, "Unable to initialize extension: " + uniqueId, ex));
@@ -160,7 +179,17 @@ public class DebuggersManager implements BundleListener, JsDebuggersManager {
 		}
 		JsDebugger debugger = debuggers.remove(uniqueId);
 		extensions.remove(debugger);
+		notifyListeners(debugger, JsDebuggerChangeListener.State.REMOVED);
 		debugger.dispose();
+	}
+
+	private void notifyListeners(JsDebugger debugger, JsDebuggerChangeListener.State state) {
+		if (listeners == null) {
+			return;
+		}
+		for (JsDebuggerChangeListener listener : listeners) {
+			listener.onJsDebuggerChange(debugger, state);
+		}
 	}
 
 	private String getId(IExtension extension) {
@@ -176,5 +205,4 @@ public class DebuggersManager implements BundleListener, JsDebuggersManager {
 		}
 		return extension.getContributor().getName() + "#" + clz;
 	}
-
 }

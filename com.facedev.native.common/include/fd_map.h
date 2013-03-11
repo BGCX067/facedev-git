@@ -1,7 +1,7 @@
 /*
  * Provides map/dictionary functionality. This implementation uses hashtable to manage keys.
  * Keys should provide == operator implementation. Default hash function assumes that pointers
- * are used as keys and uses memory address as hash value. If you want to provide custom
+ * are used as keys and uses digital representation of key as hash value. If you want to provide custom
  * hash function - you may pass it to the constructor.
  *
  * Hashtable implements sequences collision resolving algorithm and uses 0.75 load factor to rehash.
@@ -13,7 +13,7 @@
 #ifndef FD_MAP_H_
 #define FD_MAP_H_
 
-#include "fd_lang.h"
+#include "fd_common.h"
 #include "fd_collection.h"
 #include <string.h>
 
@@ -162,8 +162,8 @@ public:
 	 * Returns value previously associated with key.
 	 */
 	V remove(K key) {
-		if ( (count * 8) < length && length > 10) {// TODO: check rehash
-			rehash(count * 2);
+		if ( (count * 8) < length && length > 10) {
+			rehash(fd_max<size_t>(count / 2, 10));
 		}
 		size_t hc = hash(key) % length;
 		Entry* entry = map[hc];

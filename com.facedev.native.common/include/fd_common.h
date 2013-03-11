@@ -10,4 +10,12 @@
 
 #include "fd_lang.h"
 
+/*
+ * Returns greater argument of the first one if arguments are equal.
+ */
+template <typename T>
+inline T fd_max(T a, T b) {
+	return a < b ? b : a;
+}
+
 #endif /* FD_COMMON_H_ */

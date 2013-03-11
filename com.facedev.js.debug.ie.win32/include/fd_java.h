@@ -8,7 +8,37 @@
 #ifndef FD_JAVA_H_
 #define FD_JAVA_H_
 
+#include <jni.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+/*
+ * Class:     com_facedev_js_debug_ie_IEJsDebugger
+ * Method:    initIEDriver
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_facedev_js_debug_ie_IEJsDebugger_initIEDriver
+  (JNIEnv *, jclass);
 
+/*
+ * Class:     com_facedev_js_debug_ie_IEJsDebugger
+ * Method:    disposeIEDriver
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_com_facedev_js_debug_ie_IEJsDebugger_disposeIEDriver
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     com_facedev_js_debug_ie_IEJsDebugger
+ * Method:    fillIEInstance
+ * Signature: (Lcom/facedev/js/debug/ie/IEJsDebuggerInstance;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_facedev_js_debug_ie_IEJsDebugger_fillIEInstance
+  (JNIEnv *, jclass, jobject);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FD_JAVA_H_ */

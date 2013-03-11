@@ -16,10 +16,33 @@ import com.facedev.js.debug.JsDebuggerInstance;
  */
 public class IEJsDebugger implements JsDebugger {
 	
-	private static Boolean supported;
+	private static volatile Boolean supported;
 
+	/**
+	 * This constructor is provided for extension.
+	 * Clients should not call this constructor as they will get instantiation error.
+	 */
 	public IEJsDebugger() {
+		if (supported != null) {
+			throw new IllegalAccessError("You are not allowed to instantiate this class");
+		}
 		registerNatives();
+	}
+	
+	private static synchronized void registerNatives() {
+		if (Activator.getContext() == null) {
+			supported = null;
+			return; // not started yet
+		}
+		if (supported != null) {
+			return; // already registered
+		}
+		try {
+			System.loadLibrary("ie_debug_win32");
+			supported = initIEDriver();
+		} catch (Throwable th) {
+			supported = false;
+		}
 	}
 
 	public String getName() {
@@ -35,9 +58,12 @@ public class IEJsDebugger implements JsDebugger {
 			throw new JsDebuggerException("IE Debugger is not loaded or not supported on this platform");
 		}
 		List<JsDebuggerInstance> result = new LinkedList<JsDebuggerInstance>();
-		for (int i = getRegisteredInstancesCount(); i > 0; i--) {
-			result.add(new IEJsDebuggerInstance());
+		
+		IEJsDebuggerInstance instance;
+		while (fillIEInstance(instance = new IEJsDebuggerInstance())) {
+			result.add(instance);
 		}
+		
 		return result;
 	}
 
@@ -54,23 +80,13 @@ public class IEJsDebugger implements JsDebugger {
 	 * @see com.facedev.js.debug.JsDebugger#dispose()
 	 */
 	public void dispose() {
-	}
-	
-	private static synchronized void registerNatives() {
-		if (Activator.getContext() == null) {
-			supported = null;
-			return; // not started yet
-		}
-		if (supported != null) {
-			return; // already registered
-		}
-		try {
-			System.loadLibrary("ie_debug_win32");
-			supported = true;
-		} catch (Throwable th) {
-			supported = false;
-		}
+		disposeIEDriver();
+		supported = null;
 	}
 
-	private static native int getRegisteredInstancesCount();
+	private static native boolean initIEDriver();
+	
+	private static native void disposeIEDriver();
+
+	private static native boolean fillIEInstance(IEJsDebuggerInstance ieJsDebuggerInstance);
 }

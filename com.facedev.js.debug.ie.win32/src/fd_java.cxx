@@ -5,7 +5,7 @@
  *      Author: alex.bereznevatiy@gmail.com
  */
 
-#include "../include/com_facedev_js_debug_ie_IEJsDebugger.h"
+#include "../include/fd_java.h"
 #include <iostream>
 #include "windows.h"
 
@@ -17,7 +17,7 @@ JNIEXPORT jint JNICALL Java_com_facedev_js_debug_ie_IEJsDebugger_getRegisteredIn
 
 	HMODULE module = GetModuleHandleA("ie_debug_win32.dll");
 	GetModuleFileName(module, rez, MAX_SIZE);
-	std::cout << "File name: " << rez << std::endl;
+	std::cout << "File path to IE: " << rez << std::endl;
 
 	return 1;
 }
