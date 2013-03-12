@@ -255,6 +255,14 @@ final class Tokenizer implements TokenSource {
 		public boolean isKeyword(String keyword) {
 			return this.keyword == keyword;
 		}
+		
+		/*
+		 * (non-Javadoc)
+		 * @see com.facedev.js.parser.Token#isKeyword()
+		 */
+		public boolean isKeyword() {
+			return keyword != null;
+		}
 
 		/*
 		 * (non-Javadoc)
@@ -558,10 +566,25 @@ final class Tokenizer implements TokenSource {
 
 	private void readDigit(StringBuilder result) throws IOException {
 		int c;
+		boolean decimal = true, skipNext = false;
 
 		while ((c = reader.read()) >= 0 &&
-				(CharUtils.isIdentifierPart(c) || c == '.')) {
+				(CharUtils.isIdentifierPart(c) || 
+				(c == '.' && decimal)) ||
+				skipNext) {
 			result.append((char)c);
+			if (skipNext) {
+				skipNext = false;
+				continue;
+			}
+			if (c == 'x' || c == 'X') {
+				decimal = false;
+				continue;
+			}
+			if (decimal && (c == 'e' || c == 'E')) {
+				skipNext = true;
+				continue;
+			}
 		}
 
 		nextChar = c;

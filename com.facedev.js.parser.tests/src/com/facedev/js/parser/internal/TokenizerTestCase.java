@@ -163,6 +163,9 @@ public class TokenizerTestCase {
 		assertEquals("\"asdfjlkasjdf \\\\\\\"\"", tokenizer.next().toString());
 		assertEquals("*", tokenizer.next().toString());
 		assertEquals("/this is pattern/gi", tokenizer.next().toString());
+		assertEquals("0x023", tokenizer.next().toString());
+		assertEquals(".", tokenizer.next().toString());
+		assertEquals("method", tokenizer.next().toString());
 		
 		assertNull(tokenizer.next());
 	}

@@ -35,6 +35,12 @@ public interface Token extends CharSequence {
 	 * Otherwise returns <code>false</code>.
 	 */
 	boolean isKeyword(String keyword);
+	
+	/**
+	 * @return <code>true</code> if this token represents one of the 
+	 * javascript language keywords. 
+	 */
+	boolean isKeyword();
 
 	/**
 	 * @return <code>true</code> if this token is digit.
