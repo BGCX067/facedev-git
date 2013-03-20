@@ -4,6 +4,9 @@ import java.io.IOException;
 
 /**
  * Core exception that may be thrown when javascript parsing fails critically.
+ * Note that this exception represents non-recoverable error in parsing and
+ * not equivalent to javascript SyntaxError which is typically handled 
+ * by {@link JsParseLogger}.
  * 
  * @author alex.bereznevatiy@gmail.com
  *

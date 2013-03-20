@@ -1,9 +1,10 @@
 package com.facedev.js.parser.internal;
 
 import java.io.Reader;
+import java.net.URI;
 
-import com.facedev.js.parser.JsCompilationUnitDescriptor;
-import com.facedev.js.parser.JsDescriptor;
+import com.facedev.js.parser.JsCompilationUnit;
+import com.facedev.js.parser.JsSyntaxNode;
 import com.facedev.js.parser.JsParseException;
 import com.facedev.js.parser.JsParseLogger;
 import com.facedev.js.parser.JsParser;
@@ -18,11 +19,11 @@ import com.facedev.js.parser.JsParser;
  */
 public class JsAstParser extends JsParser {
 	
-	private Reader reader;
+	private URI uri;
 	private JsParseLogger logger;
 
-	public JsAstParser(Reader reader) {
-		this.reader = reader;
+	public JsAstParser(URI uri) {
+		this.uri = uri;
 	}
 
 	/*
@@ -30,47 +31,17 @@ public class JsAstParser extends JsParser {
 	 * @see com.facedev.js.parser.JsParser#parse(com.facedev.js.parser.JsParseLogger)
 	 */
 	@Override
-	public JsCompilationUnitDescriptor parse(JsParseLogger logger) throws JsParseException {
+	public JsCompilationUnit parse(JsParseLogger logger) throws JsParseException {
 		TokenSource source = createTokenSource();
 		setLogger(logger);
-		return (JsCompilationUnitDescriptor) expect(source, JsDescriptorType.COMPILATION_UNIT);
+		return null;
 	}
 
 	/**
 	 * @return new token source for the reader associated
 	 */
 	TokenSource createTokenSource() {
-		return new CommentsTokenFilter(new Tokenizer(reader));
-	}
-
-	/**
-	 * Expect some descriptor to be parsed next.
-	 * Allowed descriptors are enumerated in the last parameter.
-	 * If next token is not expected one this method moves tokenizer 
-	 * to the end of expression and returns <code>null</code>.
-	 * 
-	 * Note that no logging is done by this method and clients should log errors 
-	 * and warning by themselves. 
-	 * 
-	 * @param source to read tokens from
-	 * @param types of descriptors that are allowed in this position
-	 * @return parsed type or <code>null</code> in case not expected type
-	 * is parsed.
-	 * @throws JsParseException in case of troubles
-	 */
-	JsDescriptor expect(TokenSource source, JsDescriptorType...types) throws JsParseException {
-		for (JsDescriptorType type : types) {
-			if (type.isApplicable(source)) {
-				return type.parse(this, source);
-			}
-		}
-		while (source.current() != null && !source.current().isExpressionEnd()) {
-			source.next();
-		}
-		if (source.current() != null) {
-			source.next();
-		}
-		return null;
+		return null;//new CommentsTokenFilter(new Tokenizer(uri.toURL().openStream()));
 	}
 
 	/**

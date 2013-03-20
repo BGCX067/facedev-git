@@ -33,5 +33,5 @@ public interface JsParseLogger {
 	 * @param message
 	 * @param descriptor
 	 */
-	void log(Level level, String message, JsDescriptor descriptor);
+	void log(Level level, String message, JsSyntaxNode descriptor);
 }

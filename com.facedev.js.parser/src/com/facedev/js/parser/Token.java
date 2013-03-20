@@ -30,7 +30,7 @@ public interface Token extends CharSequence {
 	boolean isIdentifier();
 	
 	/**
-	 * @param keyword (should be interned with {@link String#intern()}).
+	 * @param keyword (<b>must</b> be interned with {@link String#intern()}).
 	 * @return <code>true</code> if this token is equal to keyword passed.
 	 * Otherwise returns <code>false</code>.
 	 */
@@ -77,16 +77,4 @@ public interface Token extends CharSequence {
 	 * @return offset of first character of this token relative to the beginning of the line.
 	 */
 	int getOffset();
-
-	/**
-	 * Writes characters of this token to the result.
-	 * @param result
-	 */
-
-	void writeTo(StringBuilder result);
-	
-	/**
-	 * @return representation of this token as string.
-	 */
-	String toString();
 }

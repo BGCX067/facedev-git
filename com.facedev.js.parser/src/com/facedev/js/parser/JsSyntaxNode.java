@@ -3,12 +3,12 @@ package com.facedev.js.parser;
 import java.util.List;
 
 /**
- * Common interface for all descriptors of javascript language.
+ * Common interface for all nodes in abstract syntax tree of javascript document.
  * 
  * @author alex.bereznevatiy@gmail.com
  *
  */
-public interface JsDescriptor {
+public interface JsSyntaxNode {
 	
 	/**
 	 * @return unmodifiable list of tokens associated with this descriptor.
