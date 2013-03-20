@@ -13,6 +13,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 /*
  * Class:     com_facedev_js_debug_ie_IEJsDebugger
  * Method:    initIEDriver
@@ -31,11 +32,19 @@ JNIEXPORT void JNICALL Java_com_facedev_js_debug_ie_IEJsDebugger_disposeIEDriver
 
 /*
  * Class:     com_facedev_js_debug_ie_IEJsDebugger
+ * Method:    getDebuggerName
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_facedev_js_debug_ie_IEJsDebugger_getDebuggerName
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     com_facedev_js_debug_ie_IEJsDebugger
  * Method:    fillIEInstance
- * Signature: (Lcom/facedev/js/debug/ie/IEJsDebuggerInstance;)Z
+ * Signature: (Lcom/facedev/js/debug/ie/IEJsDebuggerInstance;I)Z
  */
 JNIEXPORT jboolean JNICALL Java_com_facedev_js_debug_ie_IEJsDebugger_fillIEInstance
-  (JNIEnv *, jclass, jobject);
+  (JNIEnv *, jclass, jobject, jint);
 
 #ifdef __cplusplus
 }

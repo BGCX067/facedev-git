@@ -9,7 +9,6 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import com.facedev.js.parser.JsParseException;
-import com.facedev.js.parser.Token;
 
 public class NumberParserTestCase {
 
@@ -135,7 +134,7 @@ public class NumberParserTestCase {
 	private double parse(String val) throws JsParseException {
 		Tokenizer tokenizer = new Tokenizer(new StringReader(val));
 		Assert.assertNotNull(tokenizer.next());
-		Token number = tokenizer.current();
+//		Token number = tokenizer.current();
 		Assert.assertNull(tokenizer.next());
 		return 0.0;//JsNumberLiteralDescriptorImpl.parseNumber(number);
 	}
