@@ -44,7 +44,7 @@ public class BrowsersView extends ViewPart {
 	public void createPartControl(Composite parent) {
 		viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		drillDownAdapter = new DrillDownAdapter(viewer);
-		viewer.setContentProvider(new BrowsersViewContentProvider(this));
+		viewer.setContentProvider(new BrowsersViewContentProvider(this, viewer));
 		viewer.setLabelProvider(new BrowsersViewContentProvider.ViewLabelProvider());
 		viewer.setSorter(new NameSorter());
 		viewer.setInput(getViewSite());

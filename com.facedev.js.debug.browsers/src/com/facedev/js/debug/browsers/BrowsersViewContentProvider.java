@@ -8,12 +8,15 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 
 import com.facedev.js.debug.JsDebugger;
+import com.facedev.js.debug.JsDebuggerChangeListener;
 import com.facedev.js.debug.JsDebuggerException;
 import com.facedev.js.debug.JsDebuggerInstance;
 import com.facedev.js.debug.JsDebuggersManager;
@@ -26,26 +29,35 @@ import com.facedev.utils.OSGiUtils;
  *
  */
 class BrowsersViewContentProvider implements IStructuredContentProvider,
-		ITreeContentProvider {
+		ITreeContentProvider, JsDebuggerChangeListener {
 
-	private JsDebuggersManager debuggerManager;
 	private AbstractParentNode.RootNode invisibleRoot;
-	private BrowsersView owner;
+	private final BrowsersView owner;
+	private final TreeViewer viewer;
 	
-	BrowsersViewContentProvider(BrowsersView owner) {
+	BrowsersViewContentProvider(BrowsersView owner, TreeViewer viewer) {
 		this.owner = owner;
+		this.viewer = viewer;
 	}
 
 	public void inputChanged(Viewer v, Object oldInput, Object newInput) {
 	}
 
 	public void dispose() {
+		JsDebuggersManager manager = Activator.getDebuggerManager();
+		
+		if (manager == null) {
+			return;
+		}
+		
+		manager.removeJsDebuggerChangeListener(this);
 	}
 
 	public Object[] getElements(Object parent) {
 		if (parent.equals(owner.getViewSite())) {
-			if (invisibleRoot == null)
+			if (invisibleRoot == null) {
 				initialize();
+			}
 			return getChildren(invisibleRoot);
 		}
 		return getChildren(parent);
@@ -71,22 +83,43 @@ class BrowsersViewContentProvider implements IStructuredContentProvider,
 		return false;
 	}
 
+	public void onJsDebuggerChange(JsDebugger debugger, State state) {
+		if (state.equals(JsDebuggerChangeListener.State.ADDED)) {
+			addDebugger(debugger);
+		} else if (state.equals(JsDebuggerChangeListener.State.REMOVED)) {
+			removeDebugger(debugger);
+		}
+		Display.getDefault().asyncExec(new Runnable() {
+			
+			public void run() {
+				viewer.refresh();
+			}
+		});
+	}
+
 	private void initialize() {
 		invisibleRoot = new AbstractParentNode.RootNode();
 
-		if (getDebuggerManager() == null) {
+		JsDebuggersManager manager = Activator.getDebuggerManager();
+		
+		if (manager == null) {
 			return;
 		}
 		
-		for (JsDebugger debugger : getDebuggerManager().getDebuggers()) {
+		for (JsDebugger debugger : manager.getDebuggers()) {
 			if (!debugger.isSupported()) {
 				continue;
 			}
 			addDebugger(debugger);
 		}
+		
+		manager.addJsDebuggerChangeListener(this);
 	}
 
 	private void addDebugger(JsDebugger debugger) {
+		if (!debugger.isSupported()) {
+			return;
+		}
 		try {
 			AbstractParentNode parent = new DebuggerNode(debugger.getName(), createIcon(debugger));
 			
@@ -99,9 +132,27 @@ class BrowsersViewContentProvider implements IStructuredContentProvider,
 			throw new RuntimeException(ex);
 		}
 	}
+
+	private void removeDebugger(JsDebugger debugger) {
+		AbstractNode[] children = invisibleRoot.getChildren();
+		if (children == null || children.length == 0) {
+			return;
+		}
+		for (AbstractNode node : children) {
+			if ((node instanceof DebuggerNode) && 
+					node.getName().equals(debugger.getName())) {
+				invisibleRoot.removeChild(node);
+				return;
+			}
+		}
+	}
 	
 	private Image createIcon(JsDebugger debugger) {
-		IExtension extension = getDebuggerManager().getExtension(debugger);
+		JsDebuggersManager manager = Activator.getDebuggerManager();
+		if (manager == null) {
+			return null;
+		}
+		IExtension extension = manager.getExtension(debugger);
 		if (extension == null) {
 			return null;
 		}
@@ -113,13 +164,6 @@ class BrowsersViewContentProvider implements IStructuredContentProvider,
 		}
 		
 		return ImageDescriptor.createFromURL(url).createImage();
-	}
-
-	private JsDebuggersManager getDebuggerManager() {
-		if (debuggerManager == null) {
-			debuggerManager = Activator.getDebuggerManager();
-		}
-		return debuggerManager;
 	}
 	
 	/**

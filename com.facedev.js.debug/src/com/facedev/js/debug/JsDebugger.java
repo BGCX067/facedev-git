@@ -36,4 +36,16 @@ public interface JsDebugger {
 	 * Used for cleanup when this plugin is going to shutdown.
 	 */
 	void dispose();
+	
+	/**
+	 * Adds {@link JsDebuggerInstanceListener} to this debugger.
+	 * @param listener
+	 */
+	void addInstanceListener(JsDebuggerInstanceListener listener);
+	
+	/**
+	 * Removes previously registered instance listener from this debugger.
+	 * @param listener
+	 */
+	void removeInstanceListener(JsDebuggerInstanceListener listener);
 }

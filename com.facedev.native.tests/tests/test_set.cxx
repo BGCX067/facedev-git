@@ -8,8 +8,10 @@
 #include "../include/test.h"
 #include <fd_set.h>
 
+using namespace fd;
+
 TEST(add) {
-	fd_set<int> set;
+	set<int> set;
 	set.add(1);
 	set.add(2);
 	set.add(3);
@@ -18,7 +20,7 @@ TEST(add) {
 }
 
 TEST(contains) {
-	fd_set<int> set;
+	set<int> set;
 	set.add(1);
 	set.add(2);
 	set.add(3);
@@ -31,7 +33,7 @@ TEST(contains) {
 }
 
 TEST(remove) {
-	fd_set<int> set;
+	set<int> set;
 	set.add(1);
 	set.add(2);
 	set.add(3);
@@ -57,12 +59,12 @@ TEST(remove) {
 
 
 TEST(iterate) {
-	fd_set<int> set;
+	set<int> set;
 	set.add(1);
 	set.add(2);
 	set.add(3);
 
-	fd_iterator<int>* it = set.iterator();
+	iterator<int>* it = set.iterator();
 
 	test_asrt(it->has_next());
 	int i = it->next();
@@ -82,7 +84,7 @@ TEST(iterate) {
 	try {
 		it->next();
 		test_fail("Should throw an exception");
-	} catch(fd_no_such_element<int>& ex) {
+	} catch(no_such_element<int>& ex) {
 	}
 
 	delete it;

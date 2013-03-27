@@ -136,6 +136,20 @@ final class Tokenizer implements TokenSource {
 		head.next = current;
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see com.facedev.js.parser.internal.TokenSource#rollback(com.facedev.js.parser.Token)
+	 */
+	public void rollback(Token to) {
+		if (to == null) {
+			throw new NullPointerException("Unable to rollback to NULL token");
+		}
+		if (!(to instanceof ArrayToken)) {
+			throw new IllegalArgumentException("This type of tokens cannot be accepted by tokenizer: " + to.getClass().getName());
+		}
+		current = (ArrayToken)to;
+	}
+
 	/**
 	 * Array-based implementation of {@link Token} interface.
 	 * 

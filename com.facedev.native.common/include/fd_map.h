@@ -1,7 +1,7 @@
 /*
  * Provides map/dictionary functionality. This implementation uses hashtable to manage keys.
  * Keys should provide == operator implementation. Default hash function assumes that pointers
- * are used as keys and uses memory address as hash value. If you want to provide custom
+ * are used as keys and uses digital representation of key as hash value. If you want to provide custom
  * hash function - you may pass it to the constructor.
  *
  * Hashtable implements sequences collision resolving algorithm and uses 0.75 load factor to rehash.
@@ -13,15 +13,17 @@
 #ifndef FD_MAP_H_
 #define FD_MAP_H_
 
-#include "fd_lang.h"
+#include "fd_common.h"
 #include "fd_collection.h"
 #include <string.h>
+
+namespace fd {
 
 /*
  * Template for map.
  */
 template <class K, class V>
-class fd_map {
+class map {
 private:
 	class Entry {
 	public:
@@ -39,7 +41,7 @@ private:
 		~Entry(){}
 	};
 
-	Entry** map;
+	Entry** entries;
 	size_t length;
 	size_t count;
 	size_t (*hash)(K);
@@ -51,9 +53,9 @@ private:
 	}
 
 	void rehash(size_t newSize) {
-		Entry** old = this->map;
-		this->map = new Entry*[newSize];
-		memset(this->map, 0, this->length * sizeof(Entry*));
+		Entry** old = this->entries;
+		this->entries = new Entry*[newSize];
+		memset(this->entries, 0, this->length * sizeof(Entry*));
 
 		for (size_t i = 0; i < length; i++) {
 			Entry* entry = old[i];
@@ -63,10 +65,10 @@ private:
 
 				entry->next = fd_null;
 				size_t hc = entry->hash % newSize;
-				if (this->map[hc] == fd_null) {
-					this->map[hc] = entry;
+				if (this->entries[hc] == fd_null) {
+					this->entries[hc] = entry;
 				} else {
-					Entry* parent = this->map[hc];
+					Entry* parent = this->entries[hc];
 					while (parent->next != fd_null) {
 						parent = parent->next;
 					}
@@ -82,7 +84,7 @@ private:
 
 	Entry* get_entry(K key) {
 		size_t hc = hash(key) % length;
-		Entry* entry = map[hc];
+		Entry* entry = entries[hc];
 		while (entry != fd_null) {
 			if (entry->key == key) {
 				return entry;
@@ -97,16 +99,16 @@ public:
 	 * Creates map using default size (cannot be less than 10)
 	 * and hash function to create fast hashes.
 	 */
-	fd_map(size_t initialSize = 10, size_t (*hash)(K) = fd_null) {
+	map(size_t initialSize = 10, size_t (*hash)(K) = fd_null) {
 		this->hash = hash == fd_null ? default_hash : hash;
 		this->length = initialSize < 10 ? 10 : initialSize;
-		this->map = new Entry*[this->length];
-		memset(this->map, 0, this->length * sizeof(Entry*));
+		this->entries = new Entry*[this->length];
+		memset(this->entries, 0, this->length * sizeof(Entry*));
 		this->count = 0;
 	}
 
-	~fd_map() {
-		delete[] this->map;
+	~map() {
+		delete[] this->entries;
 	}
 
 	/*
@@ -125,7 +127,7 @@ public:
 		}
 		size_t real_hc = hash(key);
 		size_t hc = real_hc % length;
-		Entry* entry = map[hc];
+		Entry* entry = entries[hc];
 		Entry* parent = fd_null;
 		while (entry != fd_null) {
 			if (entry->key == key) {
@@ -140,7 +142,7 @@ public:
 		count++;
 
 		if (parent == fd_null) {
-			map[hc] = newone;
+			entries[hc] = newone;
 		} else {
 			parent->next = newone;
 		}
@@ -152,7 +154,7 @@ public:
 	inline V get(K key) {
 		Entry* entry = get_entry(key);
 		if (entry == fd_null) {
-			throw fd_no_such_element<K>(key);
+			throw fd::no_such_element<K>(key);
 		}
 		return entry->value;
 	}
@@ -162,17 +164,17 @@ public:
 	 * Returns value previously associated with key.
 	 */
 	V remove(K key) {
-		if ( (count * 8) < length && length > 10) {// TODO: check rehash
-			rehash(count * 2);
+		if ( (count * 8) < length && length > 10) {
+			rehash(fd::max<size_t>(count / 2, 10));
 		}
 		size_t hc = hash(key) % length;
-		Entry* entry = map[hc];
+		Entry* entry = entries[hc];
 		Entry* parent = fd_null;
 
 		while (entry != fd_null) {
 			if (entry->key == key) {
 				if (parent == fd_null) {
-					map[hc] = entry->next;
+					entries[hc] = entry->next;
 				} else {
 					parent->next = entry->next;
 				}
@@ -185,7 +187,7 @@ public:
 			entry = entry->next;
 		}
 
-		throw fd_no_such_element<K>(key);
+		throw fd::no_such_element<K>(key);
 	}
 
 	/*
@@ -205,7 +207,7 @@ public:
 		register int i = 0;
 
 		for (size_t x = 0; x < length; x++) {
-			Entry* entry = map[x];
+			Entry* entry = entries[x];
 
 			while (entry != fd_null) {
 				result[i++] = entry->value;
@@ -226,7 +228,7 @@ public:
 		register size_t i = 0;
 
 		for (size_t x = 0; x < length; x++) {
-			Entry* entry = map[x];
+			Entry* entry = entries[x];
 
 			while (entry != fd_null) {
 				result[i++] = entry->key;
@@ -237,6 +239,8 @@ public:
 		return result;
 	}
 };
+
+} // namespace fd {
 
 
 #endif /* FD_MAP_H_ */

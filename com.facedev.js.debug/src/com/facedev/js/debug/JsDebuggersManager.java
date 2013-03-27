@@ -23,5 +23,16 @@ public interface JsDebuggersManager {
 	 * @return extension associated with passed debugger or <code>null</code> if there is no extension.
 	 */
 	IExtension getExtension(JsDebugger debugger);
-
+	
+	/**
+	 * Adds listener to this manager. Listener will be notified when debuggers are changed.
+	 * @param listener
+	 */
+	void addJsDebuggerChangeListener(JsDebuggerChangeListener listener);
+	
+	/**
+	 * Removes previously added listener.
+	 * @param listener
+	 */
+	void removeJsDebuggerChangeListener(JsDebuggerChangeListener listener);
 }

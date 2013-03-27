@@ -8,6 +8,8 @@
 #include "../include/test.h"
 #include "../../com.facedev.native.common/include/fd_observer.h"
 
+using namespace fd;
+
 static int counter = 0;
 
 static void increment(int size) {
@@ -16,7 +18,7 @@ static void increment(int size) {
 
 static int value = 0;
 
-static void set(int val) {
+static void setme(int val) {
 	value = val;
 }
 
@@ -24,7 +26,7 @@ TEST(listen) {
 	counter = 0;
 	value = 0;
 
-	fd_observer<int> obs;
+	observer<int> obs;
 
 	obs.listen(increment);
 	obs.fire(2);
@@ -37,7 +39,7 @@ TEST(listen) {
 	test_assert_eq(5, counter);
 	test_assert_eq(0, value);
 
-	obs.listen(set);
+	obs.listen(setme);
 
 	obs.fire(5);
 
@@ -49,9 +51,9 @@ TEST(unlisten) {
 	counter = 0;
 	value = 0;
 
-	fd_observer<int> obs;
+	observer<int> obs;
 
-	obs.listen(set);
+	obs.listen(setme);
 	obs.listen(increment);
 
 	obs.fire(3);
@@ -59,7 +61,7 @@ TEST(unlisten) {
 	test_assert_eq(3, counter);
 	test_assert_eq(3, value);
 
-	obs.unlisten(set);
+	obs.unlisten(setme);
 
 	obs.fire(5);
 

@@ -11,20 +11,22 @@
 
 #include "fd_set.h"
 
-template <class Message>
-class fd_observer {
-private:
-	fd_set<void(*)(Message)> listeners;
-public:
-	fd_observer() {}
+namespace fd {
 
-	~fd_observer() {}
+template <class Message>
+class observer {
+private:
+	set<void(*)(Message)> listeners;
+public:
+	observer() {}
+
+	~observer() {}
 
 	/*
 	 * Notifies all the listeners about the message.
 	 */
 	void fire(Message msg) {
-		fd_iterator<void(*)(Message)>* it = listeners.iterator();
+		iterator<void(*)(Message)>* it = listeners.iterator();
 		while (it->has_next()) {
 			it->next()(msg);
 		}
@@ -47,5 +49,6 @@ public:
 	}
 };
 
+} // namespace fd {
 
 #endif /* FD_OBSERVER_H_ */

@@ -1,9 +1,6 @@
 package com.facedev.js.parser.internal;
 
-import java.io.StringReader;
-
 import com.facedev.js.parser.JsSyntaxNode;
-import com.facedev.js.parser.JsParseException;
 import com.facedev.js.parser.JsParseLogger;
 import com.facedev.js.parser.Token;
 
@@ -26,6 +23,7 @@ public class ParseTestUtils {
 		}		
 	}
 	
+	@SuppressWarnings("unused")
 	private static class ExceptionThrowingLogger implements JsParseLogger {
 
 		public void log(Level level, String message, Token token) {

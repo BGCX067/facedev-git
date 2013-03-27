@@ -15,5 +15,10 @@
 
 typedef uint32_t fd_uint;
 
+typedef uint8_t fd_bool;
+
+#define fd_true ((fd_bool)1)
+
+#define fd_false ((fd_bool)0)
 
 #endif /* FD_LANG_H_ */

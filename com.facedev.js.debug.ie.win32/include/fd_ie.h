@@ -8,13 +8,32 @@
 #ifndef FD_IE_H_
 #define FD_IE_H_
 
+#include <string>
+
+namespace fd {
+
+class bridge;
 
 /*
  * Represents browser instance (window or tab).
  */
-class fd_ieinstance {
+class ieinstance {
+private:
+	std::wstring _name;
 
+	friend class fd::bridge;
+
+	ieinstance(std::wstring name) {
+		this->_name = name;
+	}
+
+	virtual ~ieinstance(){}
+public:
+	inline const std::wstring name() {
+		return _name;
+	}
 };
 
+} // namespace fd
 
 #endif /* FD_IE_H_ */
