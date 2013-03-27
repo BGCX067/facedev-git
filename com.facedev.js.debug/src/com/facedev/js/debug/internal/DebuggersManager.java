@@ -163,6 +163,9 @@ public class DebuggersManager implements BundleListener, JsDebuggersManager {
 		}
 		try {
 			JsDebugger debugger = (JsDebugger) extension.getConfigurationElements()[0].createExecutableExtension(CLASS_NAME_PROPERTY);
+			if (!debugger.isSupported()) {
+				return;
+			}
 			debuggers.put(uniqueId, debugger);
 			extensions.put(debugger, extension);
 			notifyListeners(debugger, JsDebuggerChangeListener.State.ADDED);

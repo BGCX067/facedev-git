@@ -11,11 +11,13 @@
 #include "fd_lang.h"
 #include "fd_map.h"
 
+namespace fd {
+
 template <class E>
-class fd_set {
+class set {
 private:
 	template <class T>
-	class array_iterator : public fd_iterator<T> {
+	class array_iterator : public fd::iterator<T> {
 	private:
 		T* array;
 		size_t size;
@@ -33,7 +35,7 @@ private:
 
 		virtual T next() {
 			if (index >= size) {
-				throw fd_no_such_element<T>();
+				throw no_such_element<T>();
 			}
 			return array[index++];
 		}
@@ -42,17 +44,18 @@ private:
 			return index < size;
 		}
 	};
-	fd_map<E, int>* map;
+
+	fd::map<E, int>* map;
 public:
 	/*
 	 * Creates set based on initial size (cannot be less than 10) and
 	 * hash function (default hash function works with pointers and uses memory address).
 	 */
-	fd_set(int initialSize = 10, size_t (*hash)(E) = fd_null) {
-		map = new fd_map<E, int>(initialSize, hash);
+	set(int initialSize = 10, size_t (*hash)(E) = fd_null) {
+		map = new fd::map<E, int>(initialSize, hash);
 	}
 
-	~fd_set() {
+	~set() {
 		delete map;
 	}
 
@@ -60,7 +63,7 @@ public:
 		map->put(el, 1);
 	}
 
-	inline fd_iterator<E>* iterator() {
+	inline fd::iterator<E>* iterator() {
 		return new array_iterator<E>(map->keys(), map->size());
 	}
 
@@ -78,5 +81,7 @@ public:
 		return map->size();
 	}
 };
+
+} // namespace fd {
 
 #endif /* FD_SET_H_ */

@@ -10,8 +10,10 @@
 #include <fd_map.h>
 #include <string.h>
 
+using namespace fd;
+
 TEST(put) {
-	fd_map<const char*, int> map;
+	map<const char*, int> map;
 
 	map.put("aaa", 4);
 	test_assert_eq(1, map.size());
@@ -25,7 +27,7 @@ TEST(put) {
 
 
 TEST(get) {
-	fd_map<const char*, int> map;
+	map<const char*, int> map;
 
 	map.put("aaa", 4);
 	map.put("bbb", 111);
@@ -39,7 +41,7 @@ TEST(get) {
 
 
 TEST(remove) {
-	fd_map<const char*, int> map;
+	map<const char*, int> map;
 
 	map.put("aaa", 4);
 	map.put("bbb", 111);
@@ -48,7 +50,7 @@ TEST(remove) {
 	test_assert_eq(4, map.remove("aaa"));
 	try {
 		map.get("aaa");
-	} catch (fd_no_such_element<const char*>& ex) {
+	} catch (no_such_element<const char*>& ex) {
 		test_asrt(strcmp("aaa", ex.element()) == 0);
 	}
 	test_assert_eq(2, map.size());
@@ -63,7 +65,7 @@ TEST(remove) {
 }
 
 TEST(rehash) {
-	fd_map<const char*, int> map(10);
+	map<const char*, int> map(10);
 
 	map.put("aaa", 4);
 	map.put("bbb", 111);
@@ -97,7 +99,7 @@ TEST(rehash) {
 }
 
 TEST(keys) {
-	fd_map<const char*, int> map(10);
+	map<const char*, int> map(10);
 
 	map.put("aaa", 4);
 	map.put("bbb", 111);
@@ -113,7 +115,7 @@ TEST(keys) {
 }
 
 TEST(values) {
-	fd_map<const char*, int> map(10);
+	map<const char*, int> map(10);
 
 	map.put("aaa", 4);
 	map.put("bbb", 111);

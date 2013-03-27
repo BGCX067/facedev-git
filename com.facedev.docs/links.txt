@@ -27,3 +27,58 @@ http://stackoverflow.com/questions/9028894/automating-internet-explorer-using-c-
 http://www.codeproject.com/Articles/12029/Automate-the-Active-Windows-Explorer-or-Internet-E
 http://support.microsoft.com/kb/176792
 http://support.microsoft.com/kb/216686/en-us
+http://stackoverflow.com/questions/1369827/reconnect-to-process-started-via-com
+
+EnumWindows could be used, or FindWindowEx in a loop. GetWindowText would give you the window caption.
+http://social.msdn.microsoft.com/Forums/en-US/ieextensiondevelopment/thread/ae6b4479-811d-4a5d-97af-15009c8cd271/
+http://francois-piette.blogspot.com/2013/01/internet-explorer-automation-part-1.html
+
+
+
+/*
+const GUID FD_IID_IShellWindows = { 0x85CB6900, 0x4D95, 0x11CF, { 0x96, 0x0C, 0x00, 0x80, 0xC7, 0xF4, 0xEE, 0x85 } };
+
+	// Initialize COM for this thread...
+	FD_WIN_SUCCESS(CoInitialize(NULL),
+			"[ERROR] Unable to initialize COM",
+		return FD_BRIDGE_STATE_ERROR);
+
+
+	fd_log("[DEBUG] Obtaining CLSID.");
+    // Get CLSID for our server...
+    CLSID clsid;
+    FD_WIN_SUCCESS(CLSIDFromProgID(L"InternetExplorer.Application", &clsid),
+   			"[ERROR] Unable to get clsid for IE",
+   		return FD_BRIDGE_STATE_ERROR);
+
+    IUnknown *pUnknown;
+
+    fd_log("[DEBUG] Getting active instances.");
+
+    IShellWindowsPtr m_spSHWinds;
+
+    FD_WIN_SUCCESS(GetActiveObject(clsid, NULL, &pUnknown),
+      			"[ERROR] Unable to get active objects for IE",
+      		return FD_BRIDGE_STATE_ERROR);
+
+    IShellWindows* shellWindows4IE;
+
+    fd_log("[DEBUG] Querying for IShellWindows COM interface.");
+
+    FD_WIN_SUCCESS(pUnknown->QueryInterface(FD_IID_IShellWindows, (void **)&(shellWindows4IE)),
+ 			"[ERROR] Unable to query IE interface instances",
+ 		return FD_BRIDGE_STATE_ERROR);
+
+    long nCount = 0;
+
+    fd_log("[DEBUG] Getting windows count.");
+
+    FD_WIN_SUCCESS(shellWindows4IE->get_Count(&nCount),
+ 			"[ERROR] Unable to query IE interface instances count",
+ 		return FD_BRIDGE_STATE_ERROR);
+*/
+
+
+http://support.microsoft.com/kb/q249232
+http://social.msdn.microsoft.com/Forums/en-US/ieextensiondevelopment/thread/57902c4d-22ef-4f53-bcf3-26ced7d1b409/
+http://www.codeproject.com/Articles/3723/Retrieving-Conversations-from-Yahoo-Messenger

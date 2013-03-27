@@ -10,27 +10,30 @@
 
 #include <string>
 
-class fd_bridge;
+namespace fd {
+
+class bridge;
 
 /*
  * Represents browser instance (window or tab).
  */
-class fd_ieinstance {
+class ieinstance {
 private:
-	std::string _name;
+	std::wstring _name;
 
-	friend class fd_bridge;
+	friend class fd::bridge;
 
-	fd_ieinstance(std::string name) {
+	ieinstance(std::wstring name) {
 		this->_name = name;
 	}
 
-	virtual ~fd_ieinstance(){}
+	virtual ~ieinstance(){}
 public:
-	inline const std::string name() {
+	inline const std::wstring name() {
 		return _name;
 	}
 };
 
+} // namespace fd
 
 #endif /* FD_IE_H_ */

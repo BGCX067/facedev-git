@@ -117,6 +117,9 @@ class BrowsersViewContentProvider implements IStructuredContentProvider,
 	}
 
 	private void addDebugger(JsDebugger debugger) {
+		if (!debugger.isSupported()) {
+			return;
+		}
 		try {
 			AbstractParentNode parent = new DebuggerNode(debugger.getName(), createIcon(debugger));
 			
