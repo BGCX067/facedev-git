@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Safari Js Debugger
+Bundle-SymbolicName: com.facedev.js.debug.safari;singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Vendor: alex.bereznevatiy@gmail.com
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-Activator: com.facedev.js.debug.safari.Activator
+Require-Bundle: org.eclipse.core.runtime,
+ com.facedev.js.debug
