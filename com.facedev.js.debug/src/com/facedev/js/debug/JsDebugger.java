@@ -48,4 +48,9 @@ public interface JsDebugger {
 	 * @param listener
 	 */
 	void removeInstanceListener(JsDebuggerInstanceListener listener);
+	
+	/**
+	 * @return unique identifier of this debugger.
+	 */
+	Object getID();
 }

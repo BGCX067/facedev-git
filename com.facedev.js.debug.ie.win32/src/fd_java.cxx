@@ -10,67 +10,21 @@
 #include "../include/fd_java.h"
 #include <string>
 
-static JavaVM* javaVM = fd_null;
-
-static void listenChanges(fd::ieinstance* instance, size_t index, fd_uint state) {
-	if (javaVM == fd_null) {
-		return;
-	}
-	JNIEnv* env;
-	jint status = javaVM->GetEnv((void**)&env, JNI_VERSION_1_4);
-
-	if (status == JNI_EDETACHED) {
-
-	} else if (status == JNI_OK) {
-		if (javaVM->AttachCurrentThread((void **) &env, NULL) != 0) {
-			fd_error("Failed to attach current thread to JVM");
-			return;
-		}
-	} else if (status == JNI_EVERSION) {
-		fd_error("Error while notifying listeners: bad java version");
-		return;// Not supported version
-	}
-
-	jclass clazz = env->FindClass("com/facedev/js/debug/ie/IEJsDebugger");
-	if (clazz != fd_null) {
-		fd_error("Unable to find the class com.facedev.js.debug.ie.IEJsDebugger");
-		javaVM->DetachCurrentThread();
-		return;
-	}
-	jmethodID method = env->GetStaticMethodID(clazz, "notifyListeners", "(IZ)V");
-	if (method == fd_null) {
-		fd_error("Unable to find the method com.facedev.js.debug.ie.IEJsDebugger.notifyListeners(int, boolean)");
-		javaVM->DetachCurrentThread();
-		return;
-	}
-
-	// com.facedev.js.debug.ie.IEJsDebugger.notifyListeners(int, boolean)
-	env->CallStaticVoidMethod(clazz, method, (jint)index, state == FD_BRIDGE_STATE_ACTIVATED ? JNI_FALSE : JNI_TRUE);
-
-	if (env->ExceptionCheck()) {
-		env->ExceptionDescribe();
-	}
-
-	javaVM->DetachCurrentThread();
-}
-
 JNIEXPORT jboolean JNICALL Java_com_facedev_js_debug_ie_IEJsDebugger_initIEDriver
   (JNIEnv* env, jclass clazz) {
 
 	if (fd::bridge::get()->install() == FD_BRIDGE_STATE_ERROR) {
 		return JNI_FALSE;
 	}
-
-	fd::bridge::get()->listen(listenChanges);
-	env->GetJavaVM(&javaVM);
+	if (fd::bridge::get()->reset() == FD_BRIDGE_STATE_ERROR) {
+		return JNI_FALSE;
+	}
 
 	return JNI_TRUE;
 }
 
 JNIEXPORT void JNICALL Java_com_facedev_js_debug_ie_IEJsDebugger_disposeIEDriver
   (JNIEnv* env, jclass clazz) {
-	javaVM = fd_null;
-	fd::bridge::get()->unlisten(listenChanges);
 	fd::bridge::get()->uninstall();
 }
 
@@ -86,15 +40,23 @@ JNIEXPORT jboolean JNICALL Java_com_facedev_js_debug_ie_IEJsDebugger_fillIEInsta
 		return JNI_FALSE;
 	}
 	fd::ieinstance* instancePointer = all[index];
-	std::wstring name = instancePointer->name();
 
 	jclass instanceClazz = env->GetObjectClass(instance);
-	jfieldID nameField = env->GetFieldID(instanceClazz, "name", "Ljava/lang/String;");
-	if (nameField == fd_null) {
-		fd_error("Unable to find class field: com.facedev.js.debug.ie.IEJsDebuggerInstance::name");
+	jmethodID initMethod = env->GetMethodID(instanceClazz, "init", "(JLjava/lang/String;)V");
+	if (initMethod == fd_null) {
+		fd_error("Unable to find class method: com.facedev.js.debug.ie.IEJsDebuggerInstance::init");
 		return JNI_FALSE;
 	}
-	env->SetObjectField(instance, nameField, env->NewString((const jchar*)name.c_str(), name.size()));
+	std::wstring name = instancePointer->name();
+
+	env->CallVoidMethod(instance, initMethod,
+			(jlong)instancePointer->id(),
+			env->NewString((const jchar*)name.c_str(), name.size()));
 
 	return JNI_TRUE;
+}
+
+JNIEXPORT void JNICALL Java_com_facedev_js_debug_ie_IEJsDebugger_resetIEDriver
+  (JNIEnv* env, jclass clazz) {
+	fd::bridge::get()->reset();
 }

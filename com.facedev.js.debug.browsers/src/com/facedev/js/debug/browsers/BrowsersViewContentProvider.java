@@ -19,6 +19,7 @@ import com.facedev.js.debug.JsDebugger;
 import com.facedev.js.debug.JsDebuggerChangeListener;
 import com.facedev.js.debug.JsDebuggerException;
 import com.facedev.js.debug.JsDebuggerInstance;
+import com.facedev.js.debug.JsDebuggerInstanceListener;
 import com.facedev.js.debug.JsDebuggersManager;
 import com.facedev.utils.OSGiUtils;
 
@@ -29,9 +30,9 @@ import com.facedev.utils.OSGiUtils;
  *
  */
 class BrowsersViewContentProvider implements IStructuredContentProvider,
-		ITreeContentProvider, JsDebuggerChangeListener {
+		ITreeContentProvider, JsDebuggerChangeListener, JsDebuggerInstanceListener {
 
-	private AbstractParentNode.RootNode invisibleRoot;
+	private volatile AbstractParentNode.RootNode invisibleRoot;
 	private final BrowsersView owner;
 	private final TreeViewer viewer;
 	
@@ -43,7 +44,7 @@ class BrowsersViewContentProvider implements IStructuredContentProvider,
 	public void inputChanged(Viewer v, Object oldInput, Object newInput) {
 	}
 
-	public void dispose() {
+	public synchronized void dispose() {
 		JsDebuggersManager manager = Activator.getDebuggerManager();
 		
 		if (manager == null) {
@@ -53,7 +54,7 @@ class BrowsersViewContentProvider implements IStructuredContentProvider,
 		manager.removeJsDebuggerChangeListener(this);
 	}
 
-	public Object[] getElements(Object parent) {
+	public synchronized Object[] getElements(Object parent) {
 		if (parent.equals(owner.getViewSite())) {
 			if (invisibleRoot == null) {
 				initialize();
@@ -63,38 +64,76 @@ class BrowsersViewContentProvider implements IStructuredContentProvider,
 		return getChildren(parent);
 	}
 
-	public Object getParent(Object child) {
+	public synchronized Object getParent(Object child) {
 		if (child instanceof AbstractNode) {
 			return ((AbstractNode) child).getParent();
 		}
 		return null;
 	}
 
-	public Object[] getChildren(Object parent) {
+	public synchronized Object[] getChildren(Object parent) {
 		if (parent instanceof AbstractParentNode) {
 			return ((AbstractParentNode) parent).getChildren();
 		}
 		return new Object[0];
 	}
 
-	public boolean hasChildren(Object parent) {
+	public synchronized boolean hasChildren(Object parent) {
 		if (parent instanceof AbstractParentNode)
 			return ((AbstractParentNode) parent).hasChildren();
 		return false;
 	}
 
-	public void onJsDebuggerChange(JsDebugger debugger, State state) {
+	public synchronized void onJsDebuggerChange(JsDebugger debugger, State state) {
 		if (state.equals(JsDebuggerChangeListener.State.ADDED)) {
 			addDebugger(debugger);
 		} else if (state.equals(JsDebuggerChangeListener.State.REMOVED)) {
 			removeDebugger(debugger);
 		}
+		requestForRefresh();
+	}
+
+	public synchronized void onInstancesChanged() {
+		requestForRefresh();
+	}
+
+	private void requestForRefresh() {
 		Display.getDefault().asyncExec(new Runnable() {
 			
 			public void run() {
 				viewer.refresh();
 			}
 		});
+	}
+
+	public synchronized void onInstanceAdd(JsDebuggerInstance instance) {
+		DebuggerNode debuggerNode = (DebuggerNode)invisibleRoot.findChild(instance.getDebugger().getID());
+		if (debuggerNode == null) {
+			return;
+		}
+		debuggerNode.addChild(new DebuggerInstanceNode(instance.getID(), instance.getName()));
+	}
+
+	public synchronized void onInstanceRemove(JsDebuggerInstance instance) {
+		DebuggerNode debuggerNode = (DebuggerNode)invisibleRoot.findChild(instance.getDebugger().getID());
+		if (debuggerNode == null) {
+			return;
+		}
+		AbstractNode child = debuggerNode.findChild(instance.getID());
+		if (child != null) {
+			debuggerNode.removeChild(child);
+		}
+	}
+
+	public synchronized void onInstanceChange(JsDebuggerInstance instance) {
+		DebuggerNode debuggerNode = (DebuggerNode)invisibleRoot.findChild(instance.getDebugger().getID());
+		if (debuggerNode == null) {
+			return;
+		}
+		DebuggerInstanceNode child = (DebuggerInstanceNode)debuggerNode.findChild(instance.getID());
+		if (child != null) {
+			child.setName(instance.getName());
+		}
 	}
 
 	private void initialize() {
@@ -121,19 +160,22 @@ class BrowsersViewContentProvider implements IStructuredContentProvider,
 			return;
 		}
 		try {
-			AbstractParentNode parent = new DebuggerNode(debugger.getName(), createIcon(debugger));
+			AbstractParentNode parent = new DebuggerNode(debugger.getID(), debugger.getName(), createIcon(debugger));
 			
 			for (JsDebuggerInstance instance : debugger.getRegisteredInstances()) {
-				AbstractNode leaf = new DebuggerInstanceNode(instance.getName());
+				AbstractNode leaf = new DebuggerInstanceNode(instance.getID(), instance.getName());
 				parent.addChild(leaf);
 			}
 			invisibleRoot.addChild(parent);
+			debugger.addInstanceListener(this);
+			
 		} catch (JsDebuggerException ex) {
 			throw new RuntimeException(ex);
 		}
 	}
 
 	private void removeDebugger(JsDebugger debugger) {
+		debugger.removeInstanceListener(this);
 		AbstractNode[] children = invisibleRoot.getChildren();
 		if (children == null || children.length == 0) {
 			return;

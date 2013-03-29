@@ -9,15 +9,21 @@ import org.eclipse.core.runtime.IAdaptable;
  *
  */
 abstract class AbstractNode implements IAdaptable {
-	private String name;
-	private AbstractParentNode parent;
+	private final Object id;
+	private volatile String name;
+	private volatile AbstractParentNode parent;
 	
-	AbstractNode(String name) {
+	AbstractNode(Object id, String name) {
+		this.id = id;
 		this.name = name;
 	}
 	
 	String getName() {
 		return name;
+	}
+	
+	void setName(String name) {
+		this.name = name;
 	}
 	
 	void setParent(AbstractParentNode parent) {
@@ -28,6 +34,10 @@ abstract class AbstractNode implements IAdaptable {
 		return parent;
 	}
 	
+	Object getId() {
+		return id;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.eclipse.core.runtime.IAdaptable#getAdapter(java.lang.Class)
