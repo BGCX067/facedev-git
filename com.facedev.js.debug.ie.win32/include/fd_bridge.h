@@ -9,9 +9,9 @@
 #define FD_BRIDGE_H_
 
 #include "../../com.facedev.native.common/include/fd_common.h"
-#include "../../com.facedev.native.common/include/fd_set.h"
 #include <vector>
 #include <string>
+#include <windows.h>
 #include "fd_ie.h"
 
 /*
@@ -58,16 +58,15 @@ class bridge {
 private:
 	static fd::bridge* instance;
 
-	set<void (*) (ieinstance*, size_t, fd_uint)>* observer;
 	std::vector<ieinstance*> _registered;
 
 	bridge(){
-		observer = new set<void (*) (ieinstance*, size_t, fd_uint)>();
 	}
 
-	~bridge(){
-		delete observer;
-	}
+	~bridge();
+
+	static BOOL fd_enum_ie_win(HWND, LPARAM);
+	static void register_handle(HWND);
 public:
 	static inline fd::bridge* get() {
 		if (instance == fd_null) {
@@ -92,34 +91,23 @@ public:
 	fd_uint uninstall();
 
 	/*
+	 * Checks if bridge is installed and up to date.
+	 * If reset was successful - returns FD_BRIDGE_STATE_NOT_CHANGED.
+	 * If error occurs - returns FD_BRIDGE_STATE_ERROR.
+	 */
+	fd_uint reset();
+
+	/*
 	 * Returns unmodifiable list of all fd::ieinstance instances registered on current moment.
 	 */
 	inline const std::vector<ieinstance*> list() {
 		return _registered;
 	}
 
-	/*
-	 * Attaches listener to watch for the instances changes.
-	 * listener is the function that takes tree arguments: first one is pointer
-	 * to fd::ieinstance object, second is index of instance in the instances vector
-	 * and third one is resulting state (either FD_BRIDGE_STATE_ACTIVATED or FD_BRIDGE_STATE_INACTIVATED)
-	 */
-	inline void listen(void (*fn) (ieinstance*, size_t, fd_uint)) {
-		observer->add(fn);
-	}
-
-	/*
-	 * Removes previously attached listener.
-	 * If listener was not attached - does nothing.
-	 */
-	inline void unlisten(void (*fn) (ieinstance*, size_t, fd_uint)) {
-		observer->remove(fn);
-	}
-
 	/**
 	 * Return name of the debugger.
 	 */
-	std::string name();
+	const std::string name();
 };
 
 } // namespace fd

@@ -1,6 +1,7 @@
 package com.facedev.js.debug.browsers;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -11,11 +12,11 @@ import java.util.List;
  */
 abstract class AbstractParentNode extends AbstractNode {
 	
-	private List<AbstractNode> children;
+	private final List<AbstractNode> children;
 
-	AbstractParentNode(String name) {
-		super(name);
-		children = new ArrayList<AbstractNode>();
+	AbstractParentNode(Object id, String name) {
+		super(id, name);
+		children = Collections.synchronizedList(new ArrayList<AbstractNode>());
 	}
 	
 	void addChild(AbstractNode child) {
@@ -26,6 +27,18 @@ abstract class AbstractParentNode extends AbstractNode {
 	void removeChild(AbstractNode child) {
 		children.remove(child);
 		child.setParent(null);
+	}
+	
+	AbstractNode findChild(Object id) {
+		if (id == null) {
+			return null;
+		}
+		for (AbstractNode child : children) {
+			if (child.getId() != null && child.getId().equals(id)) {
+				return child;
+			}
+		}
+		return null;
 	}
 	
 	AbstractNode [] getChildren() {
@@ -44,7 +57,7 @@ abstract class AbstractParentNode extends AbstractNode {
 	static class RootNode extends AbstractParentNode {
 
 		RootNode() {
-			super("");
+			super("ROOT", "");
 		}
 		
 	}

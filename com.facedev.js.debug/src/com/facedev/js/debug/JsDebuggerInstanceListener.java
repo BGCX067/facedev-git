@@ -18,4 +18,18 @@ public interface JsDebuggerInstanceListener {
 	 * @param instance
 	 */
 	void onInstanceRemove(JsDebuggerInstance instance);
+	
+
+	/**
+	 * This method is called when instance is changed by third-party process.
+	 * Change may include change of title or other information.
+	 * @param instance
+	 */
+	void onInstanceChange(JsDebuggerInstance instance);
+	
+	/**
+	 * Notifies listeners that some instances has been changed (added, removed or changed).
+	 * This method is called by debugged after analyzing all the instances with some delay.
+	 */
+	void onInstancesChanged();
 }

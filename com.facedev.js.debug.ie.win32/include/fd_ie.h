@@ -8,7 +8,9 @@
 #ifndef FD_IE_H_
 #define FD_IE_H_
 
+#include "../../com.facedev.native.common/include/fd_lang.h"
 #include <string>
+#include <windows.h>
 
 namespace fd {
 
@@ -19,11 +21,13 @@ class bridge;
  */
 class ieinstance {
 private:
+	fd_ulong _id;
 	std::wstring _name;
 
 	friend class fd::bridge;
 
-	ieinstance(std::wstring name) {
+	ieinstance(fd_ulong id, std::wstring name) {
+		_id = id;
 		this->_name = name;
 	}
 
@@ -31,6 +35,10 @@ private:
 public:
 	inline const std::wstring name() {
 		return _name;
+	}
+
+	inline const fd_ulong id() {
+		return _id;
 	}
 };
 

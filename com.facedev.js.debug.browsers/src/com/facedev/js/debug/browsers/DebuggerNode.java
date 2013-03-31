@@ -13,10 +13,10 @@ import com.facedev.js.debug.browsers.BrowsersViewContentProvider.IconHolder;
  */
 final class DebuggerNode extends AbstractParentNode implements IconHolder {
 	
-	private Image icon;
+	private final Image icon;
 
-	DebuggerNode(String name, Image icon) {
-		super(name);
+	DebuggerNode(Object id, String name, Image icon) {
+		super(id, name);
 		
 		this.icon = icon;
 	}

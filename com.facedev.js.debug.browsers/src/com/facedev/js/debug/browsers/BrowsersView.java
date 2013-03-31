@@ -6,7 +6,6 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
@@ -31,9 +30,6 @@ public class BrowsersView extends ViewPart {
 	private TreeViewer viewer;
 	private DrillDownAdapter drillDownAdapter;
 	
-	class NameSorter extends ViewerSorter {
-	}
-
 	public BrowsersView() {
 	}
 
@@ -46,7 +42,7 @@ public class BrowsersView extends ViewPart {
 		drillDownAdapter = new DrillDownAdapter(viewer);
 		viewer.setContentProvider(new BrowsersViewContentProvider(this, viewer));
 		viewer.setLabelProvider(new BrowsersViewContentProvider.ViewLabelProvider());
-		viewer.setSorter(new NameSorter());
+		viewer.setSorter(null);
 		viewer.setInput(getViewSite());
 
 		hookContextMenu();

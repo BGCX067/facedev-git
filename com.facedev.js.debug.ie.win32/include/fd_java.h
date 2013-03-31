@@ -46,6 +46,14 @@ JNIEXPORT jstring JNICALL Java_com_facedev_js_debug_ie_IEJsDebugger_getDebuggerN
 JNIEXPORT jboolean JNICALL Java_com_facedev_js_debug_ie_IEJsDebugger_fillIEInstance
   (JNIEnv *, jclass, jobject, jint);
 
+/*
+ * Class:     com_facedev_js_debug_ie_IEJsDebugger
+ * Method:    resetIEDriver
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_com_facedev_js_debug_ie_IEJsDebugger_resetIEDriver
+  (JNIEnv *, jclass);
+
 #ifdef __cplusplus
 }
 #endif
