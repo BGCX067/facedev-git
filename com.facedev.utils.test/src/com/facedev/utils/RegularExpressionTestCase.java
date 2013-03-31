@@ -58,32 +58,88 @@ public class RegularExpressionTestCase {
 	@Test
 	public void testConsume() {
 		RegularExpression regex = RegularExpression.create("a*bc*");
-		assertEquals(12, regex.consume("aaabcccdddd", 0)); 
+		assertEquals(7, regex.consume("aaabcccdddd", 0));
+		assertEquals(1, regex.getState());
+		
+		regex.reset();
+		regex.compile();
+		
+		assertEquals(7, regex.consume("aaabcccdddd", 0));
+		assertEquals(1, regex.getState());
 	}
-
+	
 	@Test
-	public void testConsumeEOF() {
-		fail("Not yet implemented");
+	public void testConsumeStates() {
+		RegularExpression regex = RegularExpression.create("[abc]*");
+		assertEquals(14, regex.consume("aaabbbbcccaaccdddd", 0));
+		assertEquals(1, regex.getState());
+		regex.reset();
+		assertEquals(0, regex.consume("aaabbbbcccaaccdddd", 14));
+		assertEquals(RegularExpression.STATE_ERROR, regex.getState());
+		
+		regex.reset();
+		regex.compile();
+		
+		assertEquals(14, regex.consume("aaabbbbcccaaccdddd", 0));
+		assertEquals(1, regex.getState());
+		regex.reset();
+		assertEquals(0, regex.consume("aaabbbbcccaaccdddd", 14));
+		assertEquals(RegularExpression.STATE_ERROR, regex.getState());
 	}
-
+	
 	@Test
-	public void testReset() {
-		fail("Not yet implemented");
-	}
+	public void testConsumeMultipleStates() {
+		RegularExpression regex = RegularExpression.create("a*|b*");
+		assertEquals(3, regex.consume("aaabbbbcccaaccdddd", 0));
+		assertEquals(1, regex.getState());
+		regex.reset();
+		assertEquals(4, regex.consume("aaabbbbcccaaccdddd", 3));
+		assertEquals(2, regex.getState());
+		regex.reset();
+		assertEquals(0, regex.consume("aaabbbbcccaaccdddd", 7));
+		assertEquals(RegularExpression.STATE_ERROR, regex.getState());
 
+		regex.reset();
+		regex.compile();
+		
+		assertEquals(3, regex.consume("aaabbbbcccaaccdddd", 0));
+		assertEquals(1, regex.getState());
+		regex.reset();
+		assertEquals(4, regex.consume("aaabbbbcccaaccdddd", 3));
+		assertEquals(2, regex.getState());
+		regex.reset();
+		assertEquals(0, regex.consume("aaabbbbcccaaccdddd", 7));
+		assertEquals(RegularExpression.STATE_ERROR, regex.getState());
+	}
+	
 	@Test
-	public void testEqualsObject() {
-		fail("Not yet implemented");
-	}
+	public void testConsumeNestedStates() {
+		RegularExpression regex = RegularExpression.create("a*|c*|b*");
+		assertEquals(3, regex.consume("aaabbbbcccaaccdddd", 0));
+		assertEquals(1, regex.getState());
+		regex.reset();
+		assertEquals(4, regex.consume("aaabbbbcccaaccdddd", 3));
+		assertEquals(3, regex.getState());
+		regex.reset();
+		assertEquals(3, regex.consume("aaabbbbcccaaccdddd", 7));
+		assertEquals(2, regex.getState());
+		regex.reset();
+		assertEquals(0, regex.consume("aaabbbbcccaaccdddd", 10));
+		assertEquals(RegularExpression.STATE_ERROR, regex.getState());
 
-	@Test
-	public void testToString() {
-		fail("Not yet implemented");
+		regex.reset();
+		regex.compile();
+		
+		assertEquals(3, regex.consume("aaabbbbcccaaccdddd", 0));
+		assertEquals(1, regex.getState());
+		regex.reset();
+		assertEquals(4, regex.consume("aaabbbbcccaaccdddd", 3));
+		assertEquals(3, regex.getState());
+		regex.reset();
+		assertEquals(3, regex.consume("aaabbbbcccaaccdddd", 7));
+		assertEquals(2, regex.getState());
+		regex.reset();
+		assertEquals(0, regex.consume("aaabbbbcccaaccdddd", 10));
+		assertEquals(RegularExpression.STATE_ERROR, regex.getState());
 	}
-
-	@Test
-	public void testClone() {
-		fail("Not yet implemented");
-	}
-
 }

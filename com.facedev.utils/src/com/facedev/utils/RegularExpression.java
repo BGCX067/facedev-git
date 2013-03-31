@@ -56,7 +56,7 @@ public final class RegularExpression implements Cloneable {
 	private volatile Node start;
 	private volatile Node current;
 	
-	private int[][] lookup;
+	private char[][] lookup;
 	
 	private volatile int state;
 	
@@ -75,7 +75,12 @@ public final class RegularExpression implements Cloneable {
 	 * @return regular expression in the start state.
 	 */
 	public static RegularExpression create(String pattern) {
-		return new RegularExpression(pattern, null);
+		Parser parser = new Parser(pattern);
+		RootNode root = new RootNode();
+		while (parser.hasNext()) {
+			root.addNextState(parser.next());
+		}
+		return new RegularExpression(pattern, root);
 	}
 
 	/**
@@ -86,7 +91,21 @@ public final class RegularExpression implements Cloneable {
 	 */
 	public static RegularExpression create(RegularExpression expression, 
 			RegularExpression...expressions) {
-		return expression;
+		if (expressions == null || expressions.length == 0) {
+			return expression;
+		}
+		RootNode root = new RootNode();
+		StringBuilder pattern = new StringBuilder();
+		
+		root.addNextState(expression.start);
+		pattern.append(expression.pattern);
+		
+		for (RegularExpression next : expressions) {
+			root.addNextState(next.start);
+			pattern.append('|');
+			pattern.append(next.pattern);
+		}
+		return new RegularExpression(pattern.toString(), root);
 	}
 	
 	/**
@@ -114,7 +133,9 @@ public final class RegularExpression implements Cloneable {
 	 */
 	public static RegularExpression compile(RegularExpression expression, 
 			RegularExpression...expressions) {
-		return expression;
+		RegularExpression result = create(expression, expressions);
+		result.compile();
+		return result;
 	}
 	
 	/**
@@ -141,8 +162,7 @@ public final class RegularExpression implements Cloneable {
 	 * <li>For combined regular expressions this indicates that final state is reached and
 	 * provides the number of subexpression that specifically matches input.
 	 * <li>If complex expression consists of other complex expressions - state is calculated
-	 * based on tree transversal algorithm: (A(B,C)((D,E)F)) => A = 1, B = 2, C = 3, D = 4,
-	 * E = 5, F = 6.
+	 * only for top-level expressions combined with top-level tube ('|').
 	 * </ul>
 	 * @return current state of this automaton.
 	 */
@@ -236,4 +256,30 @@ public final class RegularExpression implements Cloneable {
 	}
 
 	private static class Node {}
+	
+	private static class RootNode extends Node {
+
+		public void addNextState(Node next) {
+			// TODO Auto-generated method stub
+			
+		}
+	}
+	
+	private static class Parser {
+		private String value;
+		
+		Parser(String value) {
+			
+		}
+
+		public Node next() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		public boolean hasNext() {
+			// TODO Auto-generated method stub
+			return false;
+		}
+	}
 }
