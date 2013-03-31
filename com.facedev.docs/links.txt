@@ -82,3 +82,7 @@ const GUID FD_IID_IShellWindows = { 0x85CB6900, 0x4D95, 0x11CF, { 0x96, 0x0C, 0x
 http://support.microsoft.com/kb/q249232
 http://social.msdn.microsoft.com/Forums/en-US/ieextensiondevelopment/thread/57902c4d-22ef-4f53-bcf3-26ced7d1b409/
 http://www.codeproject.com/Articles/3723/Retrieving-Conversations-from-Yahoo-Messenger
+
+http://stackoverflow.com/questions/9941245/finding-the-front-safari-window-using-the-scriptingbridge-and-objective-c
+
+http://stackoverflow.com/questions/5286274/front-most-window-using-cgwindowlistcopywindowinfo

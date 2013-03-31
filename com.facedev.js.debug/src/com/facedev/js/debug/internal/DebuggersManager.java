@@ -112,7 +112,7 @@ public class DebuggersManager implements BundleListener, JsDebuggersManager {
 	}
 
 	private void addDebuggers(Bundle bundle) {
-		IExtension[] extensions = getExtensionsForBundle(null);
+		IExtension[] extensions = getExtensionsForBundle(bundle);
 		if (extensions == null || extensions.length == 0) {
 			return;
 		}
@@ -123,7 +123,7 @@ public class DebuggersManager implements BundleListener, JsDebuggersManager {
 	}
 
 	private void removeDebuggers(Bundle bundle) {
-		IExtension[] extensions = getExtensionsForBundle(null);
+		IExtension[] extensions = getExtensionsForBundle(bundle);
 		if (extensions == null || extensions.length == 0) {
 			return;
 		}
