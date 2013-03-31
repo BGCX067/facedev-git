@@ -4,6 +4,7 @@ Bundle-Name: Safari Js Debugger
 Bundle-SymbolicName: com.facedev.js.debug.safari;singleton:=true
 Bundle-Version: 1.0.0
 Bundle-Vendor: alex.bereznevatiy@gmail.com
+Bundle-NativeCode: /lib/libsafari_debug_mac.dylib; osname=macosx; processor=x86; processor=x86_64
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-Activator: com.facedev.js.debug.safari.Activator
 Require-Bundle: org.eclipse.core.runtime,

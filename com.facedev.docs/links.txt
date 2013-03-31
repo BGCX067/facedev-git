@@ -84,3 +84,5 @@ http://social.msdn.microsoft.com/Forums/en-US/ieextensiondevelopment/thread/5790
 http://www.codeproject.com/Articles/3723/Retrieving-Conversations-from-Yahoo-Messenger
 
 http://stackoverflow.com/questions/9941245/finding-the-front-safari-window-using-the-scriptingbridge-and-objective-c
+
+http://stackoverflow.com/questions/5286274/front-most-window-using-cgwindowlistcopywindowinfo
