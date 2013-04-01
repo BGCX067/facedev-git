@@ -1,5 +1,6 @@
 package com.facedev.js.debug.ie;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,12 +11,13 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.facedev.js.debug.JsDebugger;
 import com.facedev.js.debug.JsDebuggerException;
 import com.facedev.js.debug.JsDebuggerInstance;
 import com.facedev.js.debug.JsDebuggerInstanceListener;
+import com.facedev.utils.PollingService;
+import com.facedev.utils.PollingService.PollingTask;
 
 /**
  * Internet explorer debugger entry point class.
@@ -26,17 +28,17 @@ import com.facedev.js.debug.JsDebuggerInstanceListener;
  */
 public class IEJsDebugger implements JsDebugger {
 	private static final Object ID = new Object();
+	private static final Object LOCK = new Object();
 	
 	private static final String LIBRARY_NAME = "ie_debug_win32";
 	private static Boolean supported;
 	private static final Set<JsDebuggerInstanceListener> listeners = new CopyOnWriteArraySet<JsDebuggerInstanceListener>();
 	
 	private static volatile String name = "Internet Explorer";
-	private static final AtomicInteger instancesCount = new AtomicInteger(0);
-	
+
 	private static volatile FutureTask<List<JsDebuggerInstance>> asynch;
 	
-	private static volatile DispatcherThread dispatcher;
+	private static volatile PollingTask dispatcher;
 
 	private static volatile IEJsDebugger singleton;
 
@@ -45,19 +47,16 @@ public class IEJsDebugger implements JsDebugger {
 	 * Clients should not call this constructor directly.
 	 */
 	public IEJsDebugger() {
-		if (singleton != null) {
-			throw new IllegalStateException("Multiple instances of IE debugger are not allowed");
+		synchronized(LOCK) {
+			if (singleton != null) {
+				throw new IllegalStateException("Multiple instances of IE debugger are not allowed");
+			}
+			singleton = this;
+			registerNatives();
 		}
-		singleton = this;
-		registerNatives();
-		instancesCount.incrementAndGet();
 	}
 	
-	private static synchronized void registerNatives() {
-		if (Activator.getContext() == null) {
-			supported = null;
-			return; // not started yet
-		}
+	private static void registerNatives() {
 		if (supported != null) {
 			return; // already registered
 		}
@@ -67,9 +66,9 @@ public class IEJsDebugger implements JsDebugger {
 			name = getDebuggerName();
 			if (supported) {
 				resetAynch().run();
-				dispatcher = new DispatcherThread();
+				dispatcher = new Dispatcher();
+				PollingService.getInstance().schedule(dispatcher, 500L);
 				IEJsDebugger.supported = supported;
-				dispatcher.start();
 			} else {
 				IEJsDebugger.supported = supported;
 				singleton = null;
@@ -109,7 +108,7 @@ public class IEJsDebugger implements JsDebugger {
 	 * @see com.facedev.js.debug.JsDebugger#isSupported()
 	 */
 	public boolean isSupported() {
-		synchronized (IEJsDebugger.class) {
+		synchronized (LOCK) {
 			return supported != null && supported.booleanValue();
 		}
 	}
@@ -119,17 +118,14 @@ public class IEJsDebugger implements JsDebugger {
 	 * @see com.facedev.js.debug.JsDebugger#dispose()
 	 */
 	public void dispose() {
-		synchronized (IEJsDebugger.class) {
-			if (instancesCount.decrementAndGet() > 0) {
-				return;
-			}
+		synchronized (LOCK) {
 			listeners.clear();
 			if (isSupported()) {
 				disposeIEDriver();
-				supported = null;
-				dispatcher = null;
-				singleton = null;
 			}
+			supported = null;
+			dispatcher = null;
+			singleton = null;
 		}
 	}
 
@@ -186,6 +182,9 @@ public class IEJsDebugger implements JsDebugger {
 	 */
 	private static native void disposeIEDriver();
 	
+	/**
+	 * Resets IE driver and reloads all the instances.
+	 */
 	private static native void resetIEDriver();
 	
 	/**
@@ -207,7 +206,6 @@ public class IEJsDebugger implements JsDebugger {
 			void notify(JsDebuggerInstance instance,
 					JsDebuggerInstanceListener listener) {
 				listener.onInstanceAdd(instance);
-				
 			}
 		}, 
 		CHANGE {
@@ -238,37 +236,24 @@ public class IEJsDebugger implements JsDebugger {
 			for (JsDebuggerInstanceListener listener : listeners) {
 				notify(instance, listener);
 			}
-			
 		}
 	}
 	
-	private static class DispatcherThread extends Thread {
+	private static class Dispatcher implements PollingTask {
 		
-		DispatcherThread() {
-			setDaemon(true);
-		}
-
-		@Override
-		public synchronized void run() {
-			try {
-				while(dispatcher == this) {
-					wait(500);
-					try {
-						processLoop();
-					} catch (ExecutionException ex) {
-						ex.printStackTrace();
-						// ignore so far
-					}
-				}
-			} catch(InterruptedException ex) {
-				// ignore & exit
+		public Boolean call() throws Exception {
+			if (dispatcher != this) {
+				// disposed:
+				return false;
 			}
+			synchronized(LOCK) {
+				processLoop();
+			}
+			return null;
 		}
 
 		private void processLoop() throws InterruptedException, ExecutionException {
-			if (!asynch.isDone()) {
-				asynch.run();
-			}
+			asynch.run();
 			List<JsDebuggerInstance> previous = asynch.get();
 			resetIEDriver();
 			resetAynch().run();
@@ -279,31 +264,49 @@ public class IEJsDebugger implements JsDebugger {
 			if (previous == null || current == null) {
 				return;
 			}
-			boolean changed = false;
-			Map<Long, JsDebuggerInstance> idToInstance = new HashMap<Long, JsDebuggerInstance>(previous.size()*2);
-			for (JsDebuggerInstance instance : previous) {
-				IEJsDebuggerInstance ie = (IEJsDebuggerInstance)instance;
-				idToInstance.put(ie.getID(), ie);
-			}
+			Map<Long, JsDebuggerInstance> idToInstance = getIdToInstanceMap(previous);
 			
-			for (JsDebuggerInstance instance : current) {
-				IEJsDebuggerInstance ie = (IEJsDebuggerInstance)instance;
-				JsDebuggerInstance old = idToInstance.remove(ie.getID());
-				if (old == null) {
-					NotifyOption.ADD.notifyListeners(ie);
-					changed = true;
-				} else if (!old.getName().equals(instance.getName())) {
-					NotifyOption.CHANGE.notifyListeners(ie);
-					changed = true;
-				}
-			}
-			for (JsDebuggerInstance instance : idToInstance.values()) {
-				NotifyOption.REMOVE.notifyListeners(instance);
-				changed = true;
-			}
-			if (changed) {
+			boolean isAddedOrChanged = checkAddedOrChanged(current, idToInstance);
+			if (checkRemoved(idToInstance.values()) || isAddedOrChanged) {
 				NotifyOption.UNKNOWN.notifyListeners(null);
 			}
+		}
+
+		private boolean checkRemoved(Collection<JsDebuggerInstance> values) {
+			for (JsDebuggerInstance instance : values) {
+				NotifyOption.REMOVE.notifyListeners(instance);
+			}
+			return !values.isEmpty();
+		}
+
+		private boolean checkAddedOrChanged(List<JsDebuggerInstance> current, Map<Long, JsDebuggerInstance> idToInstance) {
+			boolean isAddedOrChanged = false;
+			for (JsDebuggerInstance instance : current) {
+				if (checkAddedOrChanged(instance, idToInstance.remove(instance.getID()))) {
+					isAddedOrChanged = true;
+				}
+			}
+			return isAddedOrChanged;
+		}
+
+		private boolean checkAddedOrChanged(JsDebuggerInstance current, JsDebuggerInstance old) {
+			if (old == null) {
+				NotifyOption.ADD.notifyListeners(current);
+				return true;
+			} else if (!old.getName().equals(current.getName())) {
+				NotifyOption.CHANGE.notifyListeners(current);
+				return true;
+			}
+			return false;
+		}
+
+		private Map<Long, JsDebuggerInstance> getIdToInstanceMap(List<JsDebuggerInstance> previous) {
+			Map<Long, JsDebuggerInstance> result = new HashMap<Long, JsDebuggerInstance>(previous.size() * 2);
+			for (JsDebuggerInstance instance : previous) {
+				IEJsDebuggerInstance ie = (IEJsDebuggerInstance)instance;
+				result.put(ie.getID(), ie);
+			}
+			return result;
 		}
 	}
 }

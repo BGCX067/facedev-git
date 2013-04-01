@@ -5,14 +5,26 @@ import org.osgi.framework.BundleContext;
 
 public class Activator implements BundleActivator {
 
-	public void start(BundleContext context) throws Exception {
-		// TODO Auto-generated method stub
-		
+	private static BundleContext context;
+
+	static BundleContext getContext() {
+		return context;
 	}
 
-	public void stop(BundleContext context) throws Exception {
-		// TODO Auto-generated method stub
-		
+	/*
+	 * (non-Javadoc)
+	 * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
+	 */
+	public void start(BundleContext bundleContext) throws Exception {
+		Activator.context = bundleContext;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
+	 */
+	public void stop(BundleContext bundleContext) throws Exception {
+		Activator.context = null;
 	}
 
 }

@@ -12,14 +12,18 @@ import com.facedev.js.debug.JsDebugger;
 import com.facedev.js.debug.JsDebuggerException;
 import com.facedev.js.debug.JsDebuggerInstance;
 import com.facedev.js.debug.JsDebuggerInstanceListener;
+import com.facedev.utils.PollingService;
+import com.facedev.utils.PollingService.PollingTask;
 
 public class SafariJsDebugger implements JsDebugger {
 	
 	private static final Object LOCK = new Object();
-	private static final String LIBRARY_NAME = "safari_debug_mac";
+	private static final String LIBRARY_NAME = "safari_debug";
 	
 	private static final List<JsDebuggerInstanceListener> listeners = 
 			new CopyOnWriteArrayList<JsDebuggerInstanceListener>();
+	
+	private static final Object ID = new Object();
 	
 	private static volatile SafariJsDebugger singletonInstance;
 	
@@ -29,7 +33,7 @@ public class SafariJsDebugger implements JsDebugger {
 	
 	private static volatile Boolean supported;
 	
-	private static volatile DispatcherThread dispatcher;
+	private static volatile Dispatcher dispatcher;
 
 	public SafariJsDebugger() {
 		synchronized(LOCK) {
@@ -52,8 +56,8 @@ public class SafariJsDebugger implements JsDebugger {
 			boolean supported = initSafariDriver();
 			name = getDriverName();
 			refreshInstances();
-			dispatcher = new DispatcherThread();
-			dispatcher.start();
+			dispatcher = new Dispatcher();
+			PollingService.getInstance().schedule(dispatcher, 500);
 			SafariJsDebugger.supported = supported;
 		} catch (UnsatisfiedLinkError ex) {
 			supported = Boolean.FALSE;
@@ -104,6 +108,7 @@ public class SafariJsDebugger implements JsDebugger {
 			listeners.clear();
 			supported = null;
 			singletonInstance = null;
+			dispatcher = null;
 		}
 	}
 
@@ -122,6 +127,14 @@ public class SafariJsDebugger implements JsDebugger {
 	public void removeInstanceListener(JsDebuggerInstanceListener listener) {
 		listeners.remove(listener);
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.facedev.js.debug.JsDebugger#getID()
+	 */
+	public Object getID() {
+		return ID;
+	}
 	
 	private static void refreshInstances() {
 		instances = new FutureTask<List<JsDebuggerInstance>>(
@@ -132,7 +145,7 @@ public class SafariJsDebugger implements JsDebugger {
 				
 				int index = 0;
 				SafariJsDebuggerInstance instance;
-				while (fillSafariInstance(instance = new SafariJsDebuggerInstance(), index++)) {
+				while (fillSafariInstance(instance = new SafariJsDebuggerInstance(singletonInstance), index++)) {
 					result.add(instance);
 				}
 					
@@ -150,25 +163,16 @@ public class SafariJsDebugger implements JsDebugger {
 	
 	private static native String getDriverName();
 	
-	private static class DispatcherThread extends Thread {
-		
-		DispatcherThread() {
-			setDaemon(true);
-		}
+	private static class Dispatcher implements PollingTask {
 
-		@Override
-		public void run() {
-			while (this == dispatcher) {
-				try {
-					refresh();
-				} catch (InterruptedException ex) {
-					// ignore & return
-					return;
-				} catch (ExecutionException ex) {
-					ex.printStackTrace();
-					return;
-				}
+		public Boolean call() throws Exception {
+			if (this != dispatcher) {
+				return false;
 			}
+			synchronized(LOCK) {
+				refresh();
+			}
+			return true;
 		}
 
 		private synchronized void refresh() throws InterruptedException, ExecutionException {
