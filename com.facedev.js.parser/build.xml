@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="com.facedev.js.parser" default="build"
+		xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+	
+	<property name="libdir" value="${basedir}/../com.facedev.lib"/>
+	<property file="${libdir}/build.properties"/>
+	<property name="facedev.lib.already.built" value="on"/>
+	
+    <target name="build" depends="clean, prepare, generate">
+        
+    </target>
+	
+	<target name="generate" depends="prepare">
+		<taskdef classname="JFlex.anttask.JFlexTask" name="jflex">
+			<classpath>
+				<fileset dir="${libdir}/lib" includes="jflex*.jar"/>
+			</classpath>
+		</taskdef>
+		<jflex file="src/com/facedev/js/parser/internal/JsTokens.flex"
+		        	outdir="src/com/facedev/js/parser/internal/"/>
+	</target>
+
+    <target name="clean">
+    </target>
+	
+	<target name="prepare" unless="facedev.lib.already.built">
+		<ant dir="${libdir}" inheritall="false" inheritrefs="false"/>
+	</target>
+
+</project>

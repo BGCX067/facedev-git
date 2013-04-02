@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ - Uses maven ant tasks to resolve all libraries automatically.
+ -->
+<project name="com.facedev.lib" default="build"
+	xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+	
+	<property file="build.properties"/>
+	<property name="maven.ant.tasks.dest" value="${basedir}/${maven.ant.tasks.jar}"/>
+	<property name="maven.ant.tasks.url" value="http://www.us.apache.org/dist/maven/ant-tasks/${maven.ant.tasks.version}/binaries/maven-ant-tasks-${maven.ant.tasks.version}.jar"/>
+	
+	<property name="facedev.libs" value="${basedir}/lib"/>
+	<property name="facedev.bundles" value="${basedir}/bundles"/>
+	<property name="facedev.bundles.sources" value="${basedir}/sources"/>
+	
+    <target name="build" depends="prepare">
+    	<artifact:pom id="mypom" file="${basedir}/pom.xml" />
+    	<artifact:dependencies sourcesFilesetId="facedev.deps.src"
+    		filesetId="facedev.deps" pomRefId="mypom" />
+    	
+    	<copy todir="${facedev.bundles}" overwrite="false">
+    		<fileset refid="facedev.deps"/>
+    		<mapper type="flatten" />
+    	</copy>
+    	
+    	<move todir="${facedev.libs}" overwrite="false">
+    		<fileset dir="${facedev.bundles}">
+				<include name="jflex*.jar"/>
+			</fileset>
+    	</move>
+    	
+    	<copy todir="${facedev.bundles.sources}" overwrite="false">
+    		<fileset refid="facedev.deps.src"/>
+    		<mapper type="flatten" />
+    	</copy>
+    </target>
+	
+	<target name="clean">
+		<delete failonerror="false" verbose="true">
+			<fileset dir="${basedir}">
+				<include name="lib/**.*.jar"/>
+				<include name="bundles/**.*.jar"/>
+				<include name="sources/**.*.jar"/>
+			</fileset>
+		</delete>
+	</target>
+
+	<target name="prepare" depends="checkmaven,getmaven,hasmaven">
+		<typedef resource="org/apache/maven/artifact/ant/antlib.xml"
+			uri="antlib:org.apache.maven.artifact.ant">
+			<classpath>
+				<path location="${maven.ant.tasks.dest}"/>
+			</classpath>
+		</typedef>
+	</target>
+
+	<target name="checkmaven">
+		<condition property="maven.is.got" value="true">
+			<resourceexists>
+				<file file="${maven.ant.tasks.dest}"/>
+			</resourceexists>
+		</condition>
+	</target>
+
+	<target name="getmaven" unless="maven.is.got">
+		<echo level="info">Loading maven ant tasks jar v${maven.ant.tasks.version}</echo>
+
+		<mkdir dir="${facedev.libs}"/>
+		<get src="${maven.ant.tasks.url}" dest="${maven.ant.tasks.dest}" verbose="true"/>
+	</target>
+		
+	<target name="hasmaven" if="maven.is.got">
+		<echo level="info">Maven ant tasks jar v${maven.ant.tasks.version} is already downloaded</echo>
+	</target>
+
+</project>

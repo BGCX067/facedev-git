@@ -1,9 +1,6 @@
 package com.facedev.js.parser.internal;
 
 import static org.junit.Assert.fail;
-
-import java.io.StringReader;
-
 import junit.framework.Assert;
 
 import org.junit.Test;
@@ -132,10 +129,10 @@ public class NumberParserTestCase {
 	}
 	
 	private double parse(String val) throws JsParseException {
-		Tokenizer tokenizer = new Tokenizer(new StringReader(val));
-		Assert.assertNotNull(tokenizer.next());
+//		Tokenizer tokenizer = new Tokenizer(new StringReader(val));
+//		Assert.assertNotNull(tokenizer.next());
 //		Token number = tokenizer.current();
-		Assert.assertNull(tokenizer.next());
+//		Assert.assertNull(tokenizer.next());
 		return 0.0;//JsNumberLiteralDescriptorImpl.parseNumber(number);
 	}
 }

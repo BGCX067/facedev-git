@@ -1,10 +1,8 @@
 package com.facedev.js.parser.internal;
 
-import java.io.Reader;
 import java.net.URI;
 
 import com.facedev.js.parser.JsCompilationUnit;
-import com.facedev.js.parser.JsSyntaxNode;
 import com.facedev.js.parser.JsParseException;
 import com.facedev.js.parser.JsParseLogger;
 import com.facedev.js.parser.JsParser;
@@ -32,7 +30,7 @@ public class JsAstParser extends JsParser {
 	 */
 	@Override
 	public JsCompilationUnit parse(JsParseLogger logger) throws JsParseException {
-		TokenSource source = createTokenSource();
+//		TokenSource source = createTokenSource();
 		setLogger(logger);
 		return null;
 	}
@@ -40,9 +38,9 @@ public class JsAstParser extends JsParser {
 	/**
 	 * @return new token source for the reader associated
 	 */
-	TokenSource createTokenSource() {
-		return null;//new CommentsTokenFilter(new Tokenizer(uri.toURL().openStream()));
-	}
+//	TokenSource createTokenSource() {
+//		return null;//new CommentsTokenFilter(new Tokenizer(uri.toURL().openStream()));
+//	}
 
 	/**
 	 * @return logger associated with this parser.
