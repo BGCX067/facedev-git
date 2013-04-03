@@ -27,18 +27,21 @@ import com.facedev.js.parser.JsKeywords;
 
 %}
 
-LineTerminator = \r|\n|\r\n
-InputCharacter = [^\r\n]
-WhiteSpace     = {LineTerminator} | [ \t\f]
+/* ECMA 7.2: white spaces definition */
+LineTerminator                = [\r\n\u2028\u2029]|\r\n
+WhiteSpace                    = [\u0009\u000B\u000C\u0020\u00A0\uFEFF\u1680\u180E\u2000-\u200A\u202F\u205F\u3000]
 
 
-/* comments */
-Comment = {TraditionalComment} | {EndOfLineComment} | {DocumentationComment}
+/* ECMA 7.4: comments */
+Comment                       = {MultiLineComment} | {SingleLineComment}
 
-TraditionalComment   = "/*" [^*] ~"*/" | "/*" "*"+ "/"
-EndOfLineComment     = "//" {InputCharacter}* {LineTerminator}
-DocumentationComment = "/**" {CommentContent} "*"+ "/"
-CommentContent       = ( [^*] | \*+ [^/*] )*
+MultiLineComment              = "/*" {MultiLineCommentChars} "*/"
+MultiLineCommentChars         = ({MultiLineNotAsteriskChar}|("*"{PostAsteriskCommentChar}))*
+PostAsteriskCommentChar       = [^\/]
+MultiLineNotAsteriskChar      = [^\*]
+
+SingleLineComment             = "//" {SingleLineCommentChars}
+SingleLineCommentChars        = ({LineTerminator})*
 
 Identifier = [:jletter:] [:jletterdigit:]*
 
