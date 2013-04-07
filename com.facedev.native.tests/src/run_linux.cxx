@@ -27,7 +27,7 @@ uint32_t tst_inner::runTest(Test* test, const char* command) {
 		return EXIT_ERROR;
 	} else if (pid == 0) {
 		uint32_t result = runTestInCurrentProcess(test);
-		bsDisposeTests();
+		disposeTests();
 		exit(result);
 	} else {
 		int result = 0;
@@ -140,7 +140,7 @@ static int stderrHolder;
 
 
 
-void tst_inneri::nitPlatform(void) {
+void tst_inner::initPlatform(void) {
 	SIG_ATTACH(SIGILL);
 	SIG_ATTACH(SIGABRT);
 	SIG_ATTACH(SIGTRAP);

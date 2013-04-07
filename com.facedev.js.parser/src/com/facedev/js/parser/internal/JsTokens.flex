@@ -81,9 +81,31 @@ UnicodeEscapeSequence         = "0000"
 /* ECMA 7.6.1 - reserved worlds */
 ReservedWord                  = {Keyword} | {FutureReservedWord} | {NullLiteral} | {BooleanLiteral}
 
-Keyword                       = "break" | "do" | "instanceof" | "typeof" | "case" | "else" | "new" | "var" | "catch" | "finally" | "return" |
-                                "void" | "continue" | "for" | "switch" | "while" | "debugger" | "function" | "this" | "with" | "default" | 
-                                "if" | "throw" | "delete" | "in" | "try"
+Keyword                       = "break" | "do" | "instanceof" | "typeof" | "case" | "else" | "new" | "var" | "catch" | "finally" | 
+                                "void" | "continue" | "for" | "switch" | "while" | "debugger" | "function" | "this" | "with" |  
+                                "if" | "throw" | "delete" | "in" | "default" | "return" | "try"
+                                
+FutureReservedWord            = "abstract" | "enum" | "int" | "short" | "boolean" | "export" | "interface" | "static" |
+                                "byte" | "extends" | "long" | "super" | "char" | "final" | "native" | "synchronized" | 
+                                "class" | "float" | "package" | "throws" | "const" | "goto" | "private" | "transient" | 
+                                "implements" | "protected" | "volatile" | "double" | "import" | "public"
+                                
+NullLiteral                   = "null"
+
+BooleanLiteral                = "true" | "false"
+
+Punctuator                    = "{" | "}" | "(" | ")" | "[" | "]" | "." | ";" | "," | "<" | ">" | "<=" | ">=" | 
+                                "==" | "!=" | "===" | "!==" | "+" | "-" | "*" | "%" | "++" | "--" | "<<" | 
+                                ">>" | ">>>" | "&" | "|" | "^" | "!" | "~" | "&&" | "||" | "?" | ":" | "=" | 
+                                "+=" | "-=" | "*=" | "%=" | "<<=" | ">>=" | ">>>=" | "&=" | "|=" | "^="
+                                 
+DivPunctuator                 = "/" | "/="
+
+Literal                       = {NullLiteral} | {BooleanLiteral} | {NumbericLiteral} | {StringLiteral}
+
+NumbericLiteral               = 0
+
+StringLiteral                 = 0
 
 DecIntegerLiteral = 0 | [1-9][0-9]*
 %state STRING

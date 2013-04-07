@@ -5,6 +5,8 @@
  *      Author: alex.bereznevatiy@gmail.com
  */
 
+#ifdef _WIN32
+
 #include <windows.h>
 #include <lmerr.h>
 #include <tchar.h>
@@ -82,3 +84,5 @@ fd_bool fd_win_check_n_log(HRESULT hresult) {
 
 	return fd_false;
 }
+
+#endif // #ifdef _WIN32

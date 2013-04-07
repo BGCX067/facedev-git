@@ -5,6 +5,8 @@
  *      Author: alex.bereznevatiy@gmail.com
  */
 
+#ifdef _WIN32
+
 #include "../../com.facedev.native.common/include/fd_common.h"
 #include "../include/fd_bridge.h"
 #include "../include/fd_java.h"
@@ -60,3 +62,5 @@ JNIEXPORT void JNICALL Java_com_facedev_js_debug_ie_IEJsDebugger_resetIEDriver
   (JNIEnv* env, jclass clazz) {
 	fd::bridge::get()->reset();
 }
+
+#endif // #ifdef _WIN32

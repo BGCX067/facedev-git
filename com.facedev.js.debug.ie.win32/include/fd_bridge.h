@@ -5,6 +5,7 @@
  *      Author: alex.bereznevatiy@gmail.com
  */
 
+#ifdef _WIN32
 #ifndef FD_BRIDGE_H_
 #define FD_BRIDGE_H_
 
@@ -114,3 +115,5 @@ public:
 
 
 #endif /* FD_BRIDGE_H_ */
+
+#endif // #ifdef _WIN32

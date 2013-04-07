@@ -5,6 +5,8 @@
  *      Author: alex.bereznevatiy@gmail.com
  */
 
+#ifdef _WIN32
+
 #include <string.h>
 #include <ole2.h>
 #include <mshtml.h>
@@ -159,3 +161,4 @@ const std::string fd::bridge::name() {
 	return result;
 }
 
+#endif // #ifdef _WIN32
