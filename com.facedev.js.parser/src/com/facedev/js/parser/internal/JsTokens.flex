@@ -18,18 +18,20 @@ import com.facedev.js.parser.JsKeywords;
 %unicode
 %line
 %column
-%function next
+%function nextToken
 %type JsFlexToken
 
 %{
-
-  private StringBuilder token = new StringBuilder();
-
+  JsFlexToken next() throws java.io.IOException, JsParseException {
+    return nextToken();
+  }
 %}
 
 /* ECMA 7.2: white spaces definition */
-LineTerminator                = [\r\n\u2028\u2029]|\r\n
+LineTerminator                = [\r\n\u2028\u2029]
+LineTerminatorSequence        = \r\n | {LineTerminator}
 WhiteSpace                    = [\u0009\u000B\u000C\u0020\u00A0\uFEFF\u1680\u180E\u2000-\u200A\u202F\u205F\u3000]
+WhiteSpaceBlock               = {WhiteSpace}+
 
 
 /* ECMA 7.4: comments */
@@ -41,10 +43,10 @@ PostAsteriskCommentChar       = [^\/]
 MultiLineNotAsteriskChar      = [^\*]
 
 SingleLineComment             = "//" {SingleLineCommentChars}
-SingleLineCommentChars        = ({LineTerminator})*
+SingleLineCommentChars        = (!{LineTerminator})*
 
 /* ECMA 7.4: tokens */
-Token                         = {IdentifierName} | {Punctuator} | {NumericLiteral} | {StringLiteral}
+/*Token                         = {IdentifierName} | {Punctuator} | {NumericLiteral} | {StringLiteral}*/
 
 /* ECMA 7.5 identifiers & identifiers names */
 IdentifierName                = {IdentifierStart}{IdentifierPart}*
@@ -76,23 +78,16 @@ OtherIdentifierPart           = [\u0030-\u0039\u005f\u0300-\u036f\u0483-\u0487\u
                                 [\uaa7b\uaab0\uaab2-\uaab4\uaab7\uaab8\uaabe\uaabf\uaac1\uaaeb-\uaaef\uaaf5\uaaf6\uabe3-\uabea\uabec\uabed] |
                                 [\uabf0-\uabf9\ufb1e\ufe00-\ufe0f\ufe20-\ufe26\ufe33\ufe34\ufe4d-\ufe4f\uff10-\uff19\uff3f]
                                 
-UnicodeEscapeSequence         = "0000"
-
 /* ECMA 7.6.1 - reserved worlds */
-ReservedWord                  = {Keyword} | {FutureReservedWord} | {NullLiteral} | {BooleanLiteral}
+/*ReservedWord                  = {Keyword} | {FutureReservedWord} | {NullLiteral} | {BooleanLiteral}*/
 
 Keyword                       = "break" | "do" | "instanceof" | "typeof" | "case" | "else" | "new" | "var" | "catch" | "finally" | 
                                 "void" | "continue" | "for" | "switch" | "while" | "debugger" | "function" | "this" | "with" |  
                                 "if" | "throw" | "delete" | "in" | "default" | "return" | "try"
                                 
-FutureReservedWord            = "abstract" | "enum" | "int" | "short" | "boolean" | "export" | "interface" | "static" |
-                                "byte" | "extends" | "long" | "super" | "char" | "final" | "native" | "synchronized" | 
-                                "class" | "float" | "package" | "throws" | "const" | "goto" | "private" | "transient" | 
-                                "implements" | "protected" | "volatile" | "double" | "import" | "public"
-                                
-NullLiteral                   = "null"
+FutureReservedWord            = "class" | "enum" | "extends" | "super" | "const" | "export" | "import"
 
-BooleanLiteral                = "true" | "false"
+FutureReservedWordStrict      = "implements" | "let" | "private" | "public" | "yield" | "interface" | "package" | "protected" | "static"
 
 Punctuator                    = "{" | "}" | "(" | ")" | "[" | "]" | "." | ";" | "," | "<" | ">" | "<=" | ">=" | 
                                 "==" | "!=" | "===" | "!==" | "+" | "-" | "*" | "%" | "++" | "--" | "<<" | 
@@ -101,50 +96,119 @@ Punctuator                    = "{" | "}" | "(" | ")" | "[" | "]" | "." | ";" | 
                                  
 DivPunctuator                 = "/" | "/="
 
-Literal                       = {NullLiteral} | {BooleanLiteral} | {NumbericLiteral} | {StringLiteral}
+/*ECMA 7.8 literals */
+/*Literal                       = {NullLiteral} | {BooleanLiteral} | {NumbericLiteral} | {StringLiteral} | {RegularExpressionLiteral}*/
+                                
+NullLiteral                   = "null"
 
-NumbericLiteral               = 0
+BooleanLiteral                = "true" | "false"
 
-StringLiteral                 = 0
+/*ECMA 7.8.3 numeric literals */
+NumbericLiteral               = {DecimalLiteral} | {HexIntegerLiteral}
 
-DecIntegerLiteral = 0 | [1-9][0-9]*
-%state STRING
+DecimalLiteral                = ({DecimalIntegerLiteral} "." {DecimalDigits}? {ExponentPart}?)|
+                                ("." {DecimalDigits} {ExponentPart}?)|
+                                ({DecimalIntegerLiteral} {ExponentPart}?)
+                                
+DecimalIntegerLiteral         = 0 | ({NonZeroDigit} {DecimalDigits}?)
+DecimalDigits                 = {DecimalDigit}+
+DecimalDigit                  = [0-9]
+NonZeroDigit                  = [1-9]
+
+ExponentPart                  = {ExponentIndicator}{SignedInteger}
+ExponentIndicator             = [eE]
+SignedInteger                 = ({DecimalDigits}) |
+                                ("+" {DecimalDigits}) | 
+                                ("-" {DecimalDigits})
+                                
+HexIntegerLiteral             = ("0x"|0X) {HexDigit}+
+HexDigit                      = [0-9a-fA-F]
+
+/* ECMA 7.8.4 String Literals */
+StringLiteral                 = ("\"" {DoubleStringCharacters}? "\"") |
+                                ("'" {SingleStringCharacters}? "'")
+DoubleStringCharacters        = {DoubleStringCharacter}+
+DoubleStringCharacter         = (!([\"\\]|{LineTerminator})) |
+                                ("\\" {EscapeSequence}) |
+                                {LineContinuation}
+
+SingleStringCharacters        = {SingleStringCharacter}+
+SingleStringCharacter         = (!([\'\\]|{LineTerminator})) |
+                                ("\\" {EscapeSequence}) |
+                                ("\\0") |
+                                {LineContinuation}
+
+LineContinuation              = "\\" {LineTerminatorSequence}
+EscapeSequence                = {CharacterEscapeSequence} |
+                                {HexEscapeSequence} |
+                                {UnicodeEscapeSequence}
+                                
+CharacterEscapeSequence       = {SingleEscapeCharacter} | {NonEscapeCharacter}
+SingleEscapeCharacter         = [\'\"\\bfnrtv]
+NonEscapeCharacter            = !({EscapeCharacter}|{LineTerminator})
+EscapeCharacter               = {SingleEscapeCharacter} | {DecimalDigit} | [xu]
+HexEscapeSequence             = "x" {HexDigit} {HexDigit}
+UnicodeEscapeSequence         = "u" {HexDigit} {HexDigit} {HexDigit} {HexDigit}
+
+/* ECMA 7.8.5 Regular Expression Literals */
+RegularExpressionLiteral      = "/" {RegularExpressionBody} "/" {RegularExpressionFlags}
+RegularExpressionBody         = {RegularExpressionFirstChar} {RegularExpressionChars}
+RegularExpressionChars        = {RegularExpressionChar}*
+RegularExpressionFirstChar    = (!(!{RegularExpressionNonTerm}|[\*\\\/\[])) |
+                                {RegularExpressionBSlashSeq} |
+                                {RegularExpressionClass}
+                                
+RegularExpressionChar         = (!(!{RegularExpressionNonTerm}|[\\\/\[])) |
+                                {RegularExpressionBSlashSeq} |
+                                {RegularExpressionClass}
+                                
+RegularExpressionBSlashSeq    = "\\" {RegularExpressionNonTerm}
+
+RegularExpressionNonTerm      = !{LineTerminator}
+
+RegularExpressionClass        = "[" {RegularExpressionClassChars} "]"
+
+RegularExpressionClassChars   = {RegularExpressionClassChar}*
+
+RegularExpressionClassChar    = (!(!{RegularExpressionNonTerm}|[\\\[])) | {RegularExpressionBSlashSeq}
+
+RegularExpressionFlags        = {IdentifierPart}
 
 %%
- /* keywords */
-<YYINITIAL> "abstract"           { return new JsFlexToken(JsKeywords.KEYWORD_ABSTRACT, 0); }
-<YYINITIAL> "boolean"            { return new JsFlexToken(JsKeywords.KEYWORD_BOOLEAN, 0); }
-<YYINITIAL> "break"              { return new JsFlexToken(JsKeywords.KEYWORD_BREAK, 0); }
+
 <YYINITIAL> {
-  /* identifiers */ 
-  {IdentifierName}                   { return new JsFlexToken("identifier", 0); }
- 
-  /* literals */
-  {DecIntegerLiteral}            { return new JsFlexToken("digit", 0); }
-  \"                             { token.setLength(0); yybegin(STRING); }
 
-  /* operators */
-  "="                            { return new JsFlexToken("=", 0);  }
-  "=="                           { return new JsFlexToken("==", 0);  }
-  "+"                            { return new JsFlexToken("+", 0);  }
+{LineTerminatorSequence}      { return new JsFlexToken(JsFlexToken.TOKEN_LINE_TERMINATOR, JsFlexToken.LINE_TERMINATOR, yyline, yycolumn); }
 
-  /* comments */
-  {Comment}                      { /* ignore */ }
- 
-  /* whitespace */
-  {WhiteSpace}                   { /* ignore */ }
+{WhiteSpaceBlock}             { return new JsFlexToken(JsFlexToken.TOKEN_WHITE_SPACE, JsFlexToken.WHITE_SPACE, yyline, yycolumn); }
+
+{Comment}                     { return new JsFlexToken(yytext(), JsFlexToken.COMMENT, yyline, yycolumn); }
+
+{Keyword}                     { return new JsFlexToken(yytext().intern(), JsFlexToken.RESERVED | JsFlexToken.RESERVED_KEYWORD, yyline, yycolumn); }
+
+{FutureReservedWordStrict}    { return new JsFlexToken(yytext().intern(), JsFlexToken.RESERVED | JsFlexToken.FUTURE_RESERVED_STRICT, yyline, yycolumn); }
+
+{FutureReservedWord}          { return new JsFlexToken(yytext().intern(), JsFlexToken.RESERVED | JsFlexToken.FUTURE_RESERVED, yyline, yycolumn); }
+
+{Punctuator}                  { return new JsFlexToken(yytext().intern(), JsFlexToken.PUNKTUATOR | JsFlexToken.ANY_PUNKTUATOR, yyline, yycolumn); }
+
+{DivPunctuator}               { return new JsFlexToken(yytext().intern(), JsFlexToken.DIV_PUNKTUATOR | JsFlexToken.ANY_PUNKTUATOR, yyline, yycolumn); }
+
+{NullLiteral}                 { return new JsFlexToken(yytext().intern(), JsFlexToken.RESERVED | JsFlexToken.RESERVED_KEYWORD | 
+                                                                          JsFlexToken.LITERAL | JsFlexToken.NULL_LITERAL, yyline, yycolumn); }
+                                                                          
+{BooleanLiteral}              { return new JsFlexToken(yytext().intern(), JsFlexToken.RESERVED | JsFlexToken.RESERVED_KEYWORD |
+                                                                          JsFlexToken.LITERAL | JsFlexToken.BOOLEAN_LITERAL, yyline, yycolumn); }
+                                                                          
+{NumbericLiteral}             { return new JsFlexToken(yytext(), JsFlexToken.LITERAL | JsFlexToken.NUMERIC_LITERAL, yyline, yycolumn); }
+
+{StringLiteral}               { return new JsFlexToken(yytext(), JsFlexToken.LITERAL | JsFlexToken.STRING_LITERAL, yyline, yycolumn); }
+{RegularExpressionLiteral}    { return new JsFlexToken(yytext(), JsFlexToken.LITERAL | JsFlexToken.REGEXP_LITERAL, yyline, yycolumn); }
+
+{IdentifierName}              { return new JsFlexToken(yytext(), JsFlexToken.IDENTIFIER, yyline, yycolumn); }
 }
-<STRING> {
-  \"                             { yybegin(YYINITIAL); 
-                                   return new JsFlexToken(token.toString(), 0); }
-  [^\n\r\"\\]+                   { token.append( yytext() ); }
-  \\t                            { token.append('\t'); }
-  \\n                            { token.append('\n'); }
 
-  \\r                            { token.append('\r'); }
-  \\\"                           { token.append('\"'); }
-  \\                             { token.append('\\'); }
+.|\n  {
+  /*Error fallback: matches any input*/
+  return new JsFlexToken(yytext(), JsFlexToken.ERROR, yyline, yycolumn);
 }
-/* error fallback */
-.|\n                             { throw new JsParseException("Illegal character <"+
-                                                    yytext()+">"); }

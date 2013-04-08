@@ -1,287 +1,294 @@
 package com.facedev.js.parser.internal;
 
-//import static org.junit.Assert.*;
-//
-//import java.io.StringReader;
-//
-//import org.junit.Test;
-//
-//import com.facedev.js.parser.JsKeywords;
-//import com.facedev.js.parser.JsParseException;
-//
-//public class TokenizerTestCase {
-//
-//	@Test
-//	public void testBase() throws JsParseException {
-//		Tokenizer tokenizer = new Tokenizer(new StringReader("a b c d"));
-//
-//		assertEquals("a", tokenizer.next().toString());
-//		assertEquals("b", tokenizer.next().toString());
-//		assertEquals("c", tokenizer.next().toString());
-//		assertEquals("d", tokenizer.next().toString());
-//		assertNotNull(tokenizer.current());
-//		assertNull(tokenizer.next());
-//		assertNull(tokenizer.current());
-//		assertNull(tokenizer.next());
-//		assertNull(tokenizer.next());
-//		assertNull(tokenizer.current());
-//		
-//		
-//		assertEquals("d", tokenizer.previous().toString());
-//		assertEquals("c", tokenizer.previous().toString());
-//		assertEquals("b", tokenizer.previous().toString());
-//		assertEquals("a", tokenizer.previous().toString());
-//		assertNotNull(tokenizer.current());
-//		try {
-//			tokenizer.previous();
-//			fail();
-//		} catch(JsParseException ex) {
-//		}
-//		
-//		assertEquals("a", tokenizer.current().toString());
-//		assertEquals("b", tokenizer.next().toString());
-//		assertEquals("c", tokenizer.next().toString());
-//		
-//		tokenizer.commit();
-//		
-//		assertNotNull(tokenizer.current());
-//		
-//		try {
-//			tokenizer.previous();
-//			fail();
-//		} catch(JsParseException ex) {
-//		}
-//		assertNotNull(tokenizer.current());
-//		
-//		assertEquals("c", tokenizer.current().toString());
-//		assertEquals("d", tokenizer.next().toString());
-//		
-//		assertNotNull(tokenizer.current());
-//		assertNull(tokenizer.next());
-//		assertNull(tokenizer.next());
-//		assertNull(tokenizer.next());
-//		assertNull(tokenizer.current());
-//		
-//		assertEquals("d", tokenizer.previous().toString());
-//		assertEquals("c", tokenizer.previous().toString());
-//		
-//		assertNotNull(tokenizer.current());
-//		try {
-//			tokenizer.previous();
-//			fail();
-//		} catch(JsParseException ex) {
-//		}
-//		assertNotNull(tokenizer.current());
-//	}
-//
-//	@Test
-//	public void testNames() throws JsParseException {
-//		Tokenizer tokenizer = new Tokenizer(new StringReader(
-//				" aaa bbb ccc ddd   "));
-//
-//		assertEquals("aaa", tokenizer.next().toString());
-//		assertEquals("bbb", tokenizer.next().toString());
-//		assertEquals("ccc", tokenizer.next().toString());
-//		assertEquals("ddd", tokenizer.next().toString());
-//		assertNull(tokenizer.next());
-//	}
-//	@Test
-//	public void testOperators() throws JsParseException {
-//		Tokenizer tokenizer = new Tokenizer(new StringReader(
-//		" ++ -- +expr -expr ~!*a/%+- << >> >>> < > <= >= , ;[]{}()." +
-//		"instanceof == != ===   !== &^|&&||?: = += -= *= b/= %= &= ^= |= <<= >>= >>>=  "));
-//
-//		assertEquals("++", tokenizer.next().toString());
-//		assertEquals("--", tokenizer.next().toString());
-//		assertEquals("+", tokenizer.next().toString());
-//		assertEquals("expr", tokenizer.next().toString());
-//		assertEquals("-", tokenizer.next().toString());
-//		assertEquals("expr", tokenizer.next().toString());
-//		assertEquals("~", tokenizer.next().toString());
-//		assertEquals("!", tokenizer.next().toString());
-//		assertEquals("*", tokenizer.next().toString());
-//		assertEquals("a", tokenizer.next().toString());
-//		assertEquals("/", tokenizer.next().toString());
-//		assertEquals("%", tokenizer.next().toString());
-//		assertEquals("+", tokenizer.next().toString());
-//		assertEquals("-", tokenizer.next().toString());
-//		assertEquals("<<", tokenizer.next().toString());
-//		assertEquals(">>", tokenizer.next().toString());
-//		assertEquals(">>>", tokenizer.next().toString());
-//		assertEquals("<", tokenizer.next().toString());
-//		assertEquals(">", tokenizer.next().toString());
-//		assertEquals("<=", tokenizer.next().toString());
-//		assertEquals(">=", tokenizer.next().toString());
-//		assertEquals(",", tokenizer.next().toString());
-//		assertEquals(";", tokenizer.next().toString());
-//		assertEquals("[", tokenizer.next().toString());
-//		assertEquals("]", tokenizer.next().toString());
-//		assertEquals("{", tokenizer.next().toString());
-//		assertEquals("}", tokenizer.next().toString());
-//		assertEquals("(", tokenizer.next().toString());
-//		assertEquals(")", tokenizer.next().toString());
-//		assertEquals(".", tokenizer.next().toString());
-//		assertEquals("instanceof", tokenizer.next().toString());
-//		assertEquals("==", tokenizer.next().toString());
-//		assertEquals("!=", tokenizer.next().toString());
-//		assertEquals("===", tokenizer.next().toString());
-//		assertEquals("!==", tokenizer.next().toString());
-//		assertEquals("&", tokenizer.next().toString());
-//		assertEquals("^", tokenizer.next().toString());
-//		assertEquals("|", tokenizer.next().toString());
-//		assertEquals("&&", tokenizer.next().toString());
-//		assertEquals("||", tokenizer.next().toString());
-//		assertEquals("?", tokenizer.next().toString());
-//		assertEquals(":", tokenizer.next().toString());
-//		assertEquals("=", tokenizer.next().toString());
-//		assertEquals("+=", tokenizer.next().toString());
-//		assertEquals("-=", tokenizer.next().toString());
-//		assertEquals("*=", tokenizer.next().toString());
-//		assertEquals("b", tokenizer.next().toString());
-//		assertEquals("/=", tokenizer.next().toString());
-//		assertEquals("%=", tokenizer.next().toString());
-//		assertEquals("&=", tokenizer.next().toString());
-//		assertEquals("^=", tokenizer.next().toString());
-//		assertEquals("|=", tokenizer.next().toString());
-//		assertEquals("<<=", tokenizer.next().toString());
-//		assertEquals(">>=", tokenizer.next().toString());
-//		assertEquals(">>>=", tokenizer.next().toString());
-//
-//		assertNull(tokenizer.next());
-//	}
-//
-//	@Test
-//	public void testLiterals() throws JsParseException {
-//		Tokenizer tokenizer = new Tokenizer(new StringReader(
-//				" .23 2aaa 141234 'a' \"asdfjlkasjdf \\\\\\\"\" * /this is pattern/gi " +
-//				"0x023.method   "));
-//
-//		assertEquals(".23", tokenizer.next().toString());
-//		assertEquals("2aaa", tokenizer.next().toString());
-//		assertEquals("141234", tokenizer.next().toString());
-//		assertEquals("'a'", tokenizer.next().toString());
-//		assertEquals("\"asdfjlkasjdf \\\\\\\"\"", tokenizer.next().toString());
-//		assertEquals("*", tokenizer.next().toString());
-//		assertEquals("/this is pattern/gi", tokenizer.next().toString());
-//		assertEquals("0x023", tokenizer.next().toString());
-//		assertEquals(".", tokenizer.next().toString());
-//		assertEquals("method", tokenizer.next().toString());
-//		
-//		assertNull(tokenizer.next());
-//	}
-//
-//	@Test
-//	public void testComments() throws JsParseException {
-//		Tokenizer tokenizer = new Tokenizer(new StringReader(
-//				" // this is comment\n" +
-//				"aaa /* this is other \n multi line \n comment */   bbb"));
-//
-//		assertEquals("// this is comment", tokenizer.next().toString());
-//		assertTrue(tokenizer.next().isExpressionEnd());
-//		assertEquals("aaa", tokenizer.next().toString());
-//		assertEquals(2, tokenizer.current().getLine());
-//		assertEquals(1, tokenizer.current().getOffset());
-//		assertEquals("/* this is other \n multi line \n comment */", tokenizer
-//				.next().toString());
-//
-//		assertEquals("bbb", tokenizer.next().toString());
-//		assertEquals(4, tokenizer.current().getLine());
-//		assertEquals(15, tokenizer.current().getOffset());
-//
-//		assertNull(tokenizer.next());
-//	}
-//
-//	@Test
-//	public void testLineAndOffset() throws JsParseException {
-//		Tokenizer tokenizer = new Tokenizer(new StringReader(
-//				" // this is comment\n" +
-//				"aaa /* this is other \n multi line \n comment */   bbb\n" +
-//				"ccc 23\n   \n   \n   \r\n \r aa"));
-//
-//		assertEquals("// this is comment", tokenizer.next().toString());
-//		assertEquals(1, tokenizer.current().getLine());
-//		assertEquals(2, tokenizer.current().getOffset());
-//		
-//		assertTrue(tokenizer.next().isExpressionEnd());
-//		assertEquals(1, tokenizer.current().getLine());
-//		assertEquals(20, tokenizer.current().getOffset());
-//
-//		assertEquals("aaa", tokenizer.next().toString());
-//		assertEquals(2, tokenizer.current().getLine());
-//		assertEquals(1, tokenizer.current().getOffset());
-//
-//		assertEquals("/* this is other \n multi line \n comment */",
-//				tokenizer.next().toString());
-//		assertEquals(2, tokenizer.current().getLine());
-//		assertEquals(5, tokenizer.current().getOffset());
-//
-//		assertEquals("bbb", tokenizer.next().toString());
-//		assertEquals(4, tokenizer.current().getLine());
-//		assertEquals(15, tokenizer.current().getOffset());
-//
-//		assertTrue(tokenizer.next().isExpressionEnd());
-//		assertEquals(4, tokenizer.current().getLine());
-//		assertEquals(18, tokenizer.current().getOffset());
-//
-//		assertEquals("ccc", tokenizer.next().toString());
-//		assertEquals(5, tokenizer.current().getLine());
-//		assertEquals(1, tokenizer.current().getOffset());
-//
-//		assertEquals("23", tokenizer.next().toString());
-//		assertEquals(5, tokenizer.current().getLine());
-//		assertEquals(5, tokenizer.current().getOffset());
-//		
-//		assertTrue(tokenizer.next().isExpressionEnd());
-//		assertTrue(tokenizer.next().isExpressionEnd());
-//		assertTrue(tokenizer.next().isExpressionEnd());
-//		assertTrue(tokenizer.next().isExpressionEnd());
-//		assertTrue(tokenizer.next().isExpressionEnd());
-//
-//		assertEquals("aa", tokenizer.next().toString());
-//		assertEquals(10, tokenizer.current().getLine());
-//		assertEquals(2, tokenizer.current().getOffset());
-//		
-//		assertNull(tokenizer.next());
-//	}
-//	
-//	@Test
-//	public void testUnicodeEscapeSequences() throws JsParseException {
-//		String seq = "\\u00" + Integer.toHexString((int)'a');
-//		Tokenizer tokenizer = new Tokenizer(new StringReader("  d" + seq + "t" + seq + "    "));
-//		
-//		assertEquals("data", tokenizer.next().toString());
-//		
-//		assertNull(tokenizer.next());
-//	}
-//	
-//	@Test
-//	public void testClassification() throws JsParseException {
-//		Tokenizer tokenizer = new Tokenizer(new StringReader(
-//				"   /**/ // aa \n 25 .25e3 aaa case ; \n \r /regex/ig" +
-//				" / 'case' \"if\"     "));
-//		
-//		assertTrue(tokenizer.next().isComment());
-//		assertTrue(tokenizer.next().isComment());
-//		
-//		assertTrue(tokenizer.next().isExpressionEnd());
-//		
-//		assertTrue(tokenizer.next().isDigitLiteral());
-//		assertTrue(tokenizer.next().isDigitLiteral());
-//		
-//		assertTrue(tokenizer.next().isIdentifier());
-//		assertFalse(tokenizer.next().isIdentifier());
-//		assertTrue(tokenizer.current().isKeyword(JsKeywords.KEYWORD_CASE));
-//		
-//		assertTrue(tokenizer.next().isExpressionEnd());
-//		assertTrue(tokenizer.next().isExpressionEnd());
-//		assertTrue(tokenizer.next().isExpressionEnd());
-//		
-//		assertTrue(tokenizer.next().isRegex());
-//		assertFalse(tokenizer.next().isRegex());
-//		
-//		assertTrue(tokenizer.next().isStringLiteral());
-//		assertTrue(tokenizer.next().isStringLiteral());
-//		
-//		assertNull(tokenizer.next());
-//	}
-//}
+import static org.junit.Assert.*;
+
+import java.io.IOException;
+import java.io.StringReader;
+
+import org.junit.Test;
+
+import com.facedev.js.parser.JsKeywords;
+import com.facedev.js.parser.JsParseException;
+import com.facedev.js.parser.Token;
+
+public class TokenizerTestCase {
+
+	@Test
+	public void testBase() throws JsParseException, IOException {
+		JsTokenizer tokenizer = new JsTokenizer(new StringReader("a b c d"));
+
+		assertEquals("a", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("b", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("c", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("d", tokenizer.next().toString());
+		assertNull(tokenizer.next());
+	}
+
+	@Test
+	public void testNames() throws JsParseException, IOException {
+		JsTokenizer tokenizer = new JsTokenizer(new StringReader(
+				" aaa bbb ccc ddd   "));
+
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("aaa", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("bbb", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("ccc", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("ddd", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertNull(tokenizer.next());
+	}
+	@Test
+	public void testOperators() throws JsParseException, IOException {
+		JsTokenizer tokenizer = new JsTokenizer(new StringReader(
+		" ++ -- +expr -expr ~!*a/%+- << >> >>> < > <= >= , ;[]{}()." +
+		"instanceof == != ===   !== &^|&&||?: = += -= *= b/= %= &= ^= |= <<= >>= >>>=  "));
+
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("++", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("--", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("+", tokenizer.next().toString());
+		assertEquals("expr", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("-", tokenizer.next().toString());
+		assertEquals("expr", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("~", tokenizer.next().toString());
+		assertEquals("!", tokenizer.next().toString());
+		assertEquals("*", tokenizer.next().toString());
+		assertEquals("a", tokenizer.next().toString());
+		assertEquals("/", tokenizer.next().toString());
+		assertEquals("%", tokenizer.next().toString());
+		assertEquals("+", tokenizer.next().toString());
+		assertEquals("-", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("<<", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals(">>", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals(">>>", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("<", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals(">", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("<=", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals(">=", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals(",", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals(";", tokenizer.next().toString());
+		assertEquals("[", tokenizer.next().toString());
+		assertEquals("]", tokenizer.next().toString());
+		assertEquals("{", tokenizer.next().toString());
+		assertEquals("}", tokenizer.next().toString());
+		assertEquals("(", tokenizer.next().toString());
+		assertEquals(")", tokenizer.next().toString());
+		assertEquals(".", tokenizer.next().toString());
+		assertEquals("instanceof", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("==", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("!=", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("===", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("!==", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("&", tokenizer.next().toString());
+		assertEquals("^", tokenizer.next().toString());
+		assertEquals("|", tokenizer.next().toString());
+		assertEquals("&&", tokenizer.next().toString());
+		assertEquals("||", tokenizer.next().toString());
+		assertEquals("?", tokenizer.next().toString());
+		assertEquals(":", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("=", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("+=", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("-=", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("*=", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("b", tokenizer.next().toString());
+		assertEquals("/=", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("%=", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("&=", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("^=", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("|=", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("<<=", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals(">>=", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals(">>>=", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+
+		assertNull(tokenizer.next());
+	}
+
+	@Test
+	public void testLiterals() throws JsParseException, IOException {
+		JsTokenizer tokenizer = new JsTokenizer(new StringReader(
+				" .23 2aaa 141234 'a' \"asdfjlkasjdf \\\\\\\"\" * /this is pattern/gi " +
+				"0x023.method   "));
+
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals(".23", tokenizer.next().toString());
+		assertEquals("2aaa", tokenizer.next().toString());
+		assertEquals("141234", tokenizer.next().toString());
+		assertEquals("'a'", tokenizer.next().toString());
+		assertEquals("\"asdfjlkasjdf \\\\\\\"\"", tokenizer.next().toString());
+		assertEquals("*", tokenizer.next().toString());
+		assertEquals("/this is pattern/gi", tokenizer.next().toString());
+		assertEquals("0x023", tokenizer.next().toString());
+		assertEquals(".", tokenizer.next().toString());
+		assertEquals("method", tokenizer.next().toString());
+		
+		assertNull(tokenizer.next());
+	}
+
+	@Test
+	public void testComments() throws JsParseException, IOException {
+		JsTokenizer tokenizer = new JsTokenizer(new StringReader(
+				" // this is comment\n" +
+				"aaa /* this is other \n multi line \n comment */   bbb"));
+
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("// this is comment", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isLineTerminator());
+		Token tok = tokenizer.next();
+		assertEquals("aaa", tok.toString());
+		assertEquals(2, tok.getLine());
+		assertEquals(1, tok.getOffset());
+		assertEquals("/* this is other \n multi line \n comment */", tokenizer
+				.next().toString());
+
+		tok = tokenizer.next();
+		assertEquals("bbb", tok.toString());
+		assertEquals(4, tok.getLine());
+		assertEquals(15, tok.getOffset());
+
+		assertNull(tokenizer.next());
+	}
+
+	@Test
+	public void testLineAndOffset() throws JsParseException, IOException {
+		JsTokenizer tokenizer = new JsTokenizer(new StringReader(
+				" // this is comment\n" +
+				"aaa /* this is other \n multi line \n comment */   bbb\n" +
+				"ccc 23\n   \n   \n   \r\n \r aa"));
+
+		Token tok = tokenizer.next();
+		assertEquals("// this is comment", tok.toString());
+		assertEquals(1, tok.getLine());
+		assertEquals(2, tok.getOffset());
+		
+		tok = tokenizer.next();
+		assertTrue(tok.isLineTerminator());
+		assertEquals(1, tok.getLine());
+		assertEquals(20, tok.getOffset());
+
+		tok = tokenizer.next();
+		assertEquals("aaa", tok.toString());
+		assertEquals(2, tok.getLine());
+		assertEquals(1, tok.getOffset());
+
+		tok = tokenizer.next();
+		assertEquals("/* this is other \n multi line \n comment */",
+				tok.toString());
+		assertEquals(2, tok.getLine());
+		assertEquals(5, tok.getOffset());
+
+		tok = tokenizer.next();
+		assertEquals("bbb", tok.toString());
+		assertEquals(4, tok.getLine());
+		assertEquals(15, tok.getOffset());
+
+		tok = tokenizer.next();
+		assertTrue(tok.isLineTerminator());
+		assertEquals(4, tok.getLine());
+		assertEquals(18, tok.getOffset());
+
+		tok = tokenizer.next();
+		assertEquals("ccc", tok.toString());
+		assertEquals(5, tok.getLine());
+		assertEquals(1, tok.getOffset());
+
+		tok = tokenizer.next();
+		assertEquals("23", tok.toString());
+		assertEquals(5, tok.getLine());
+		assertEquals(5, tok.getOffset());
+		
+		assertTrue(tokenizer.next().isLineTerminator());
+		assertTrue(tokenizer.next().isLineTerminator());
+		assertTrue(tokenizer.next().isLineTerminator());
+		assertTrue(tokenizer.next().isLineTerminator());
+		assertTrue(tokenizer.next().isLineTerminator());
+
+		tok = tokenizer.next();
+		assertEquals("aa", tok.toString());
+		assertEquals(10, tok.getLine());
+		assertEquals(2, tok.getOffset());
+		
+		assertNull(tokenizer.next());
+	}
+	
+	@Test
+	public void testUnicodeEscapeSequences() throws JsParseException, IOException {
+		String seq = "\\u00" + Integer.toHexString((int)'a');
+		JsTokenizer tokenizer = new JsTokenizer(new StringReader("  d" + seq + "t" + seq + "    "));
+		
+		assertEquals("data", tokenizer.next().toString());
+		
+		assertNull(tokenizer.next());
+	}
+	
+	@Test
+	public void testClassification() throws JsParseException, IOException {
+		JsTokenizer tokenizer = new JsTokenizer(new StringReader(
+				"   /**/ // aa \n 25 .25e3 aaa case ; \n \r /regex/ig" +
+				" / 'case' \"if\"     "));
+		
+		assertTrue(tokenizer.next().isComment());
+		assertTrue(tokenizer.next().isComment());
+		
+		assertTrue(tokenizer.next().isLineTerminator());
+		
+		assertTrue(tokenizer.next().isNumberLiteral());
+		assertTrue(tokenizer.next().isNumberLiteral());
+		
+		assertTrue(tokenizer.next().isIdentifier());
+		
+		Token tok = tokenizer.next();
+		assertFalse(tok.isIdentifier());
+		assertTrue(tok.isReserved());
+		assertTrue(tok.isKeyword());
+		assertTrue(tok.isKeyword(JsKeywords.KEYWORD_CASE));
+		
+		assertTrue(tokenizer.next().isLineTerminator());
+		assertTrue(tokenizer.next().isLineTerminator());
+		assertTrue(tokenizer.next().isLineTerminator());
+		
+		assertTrue(tokenizer.next().isRegexpLiteral());
+		assertFalse(tokenizer.next().isRegexpLiteral());
+		
+		assertTrue(tokenizer.next().isStringLiteral());
+		assertTrue(tokenizer.next().isStringLiteral());
+		
+		assertNull(tokenizer.next());
+	}
+}
