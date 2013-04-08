@@ -148,15 +148,24 @@ public class TokenizerTestCase {
 
 		assertTrue(tokenizer.next().isWhiteSpace());
 		assertEquals(".23", tokenizer.next().toString());
-		assertEquals("2aaa", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("2", tokenizer.next().toString());
+		assertEquals("aaa", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
 		assertEquals("141234", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
 		assertEquals("'a'", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
 		assertEquals("\"asdfjlkasjdf \\\\\\\"\"", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
 		assertEquals("*", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
 		assertEquals("/this is pattern/gi", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
 		assertEquals("0x023", tokenizer.next().toString());
 		assertEquals(".", tokenizer.next().toString());
 		assertEquals("method", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
 		
 		assertNull(tokenizer.next());
 	}
@@ -168,9 +177,12 @@ public class TokenizerTestCase {
 				"aaa /* this is other \n multi line \n comment */   bbb"));
 
 		assertTrue(tokenizer.next().isWhiteSpace());
-		assertEquals("// this is comment", tokenizer.next().toString());
-		assertTrue(tokenizer.next().isLineTerminator());
 		Token tok = tokenizer.next();
+		assertTrue(tok.isComment());
+		assertEquals("// this is comment", tok.toString());
+		assertTrue(tokenizer.next().isLineTerminator());
+		
+		tok = tokenizer.next();
 		assertEquals("aaa", tok.toString());
 		assertEquals(2, tok.getLine());
 		assertEquals(1, tok.getOffset());
@@ -192,6 +204,7 @@ public class TokenizerTestCase {
 				"aaa /* this is other \n multi line \n comment */   bbb\n" +
 				"ccc 23\n   \n   \n   \r\n \r aa"));
 
+		assertTrue(tokenizer.next().isWhiteSpace());
 		Token tok = tokenizer.next();
 		assertEquals("// this is comment", tok.toString());
 		assertEquals(1, tok.getLine());
@@ -252,7 +265,9 @@ public class TokenizerTestCase {
 		String seq = "\\u00" + Integer.toHexString((int)'a');
 		JsTokenizer tokenizer = new JsTokenizer(new StringReader("  d" + seq + "t" + seq + "    "));
 		
+		assertTrue(tokenizer.next().isWhiteSpace());
 		assertEquals("data", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
 		
 		assertNull(tokenizer.next());
 	}
@@ -263,7 +278,9 @@ public class TokenizerTestCase {
 				"   /**/ // aa \n 25 .25e3 aaa case ; \n \r /regex/ig" +
 				" / 'case' \"if\"     "));
 		
+		assertTrue(tokenizer.next().isWhiteSpace());
 		assertTrue(tokenizer.next().isComment());
+		assertTrue(tokenizer.next().isWhiteSpace());
 		assertTrue(tokenizer.next().isComment());
 		
 		assertTrue(tokenizer.next().isLineTerminator());

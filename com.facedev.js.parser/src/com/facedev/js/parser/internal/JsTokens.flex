@@ -29,7 +29,8 @@ import com.facedev.js.parser.JsKeywords;
 
 /* ECMA 7.2: white spaces definition */
 LineTerminator                = [\r\n\u2028\u2029]
-LineTerminatorSequence        = \r\n | {LineTerminator}
+NotLineTerminator             = [^\r\n\u2028\u2029]
+LineTerminatorSequence        = \r\n|{LineTerminator}
 WhiteSpace                    = [\u0009\u000B\u000C\u0020\u00A0\uFEFF\u1680\u180E\u2000-\u200A\u202F\u205F\u3000]
 WhiteSpaceBlock               = {WhiteSpace}+
 
@@ -43,7 +44,7 @@ PostAsteriskCommentChar       = [^\/]
 MultiLineNotAsteriskChar      = [^\*]
 
 SingleLineComment             = "//" {SingleLineCommentChars}
-SingleLineCommentChars        = (!{LineTerminator})*
+SingleLineCommentChars        = {NotLineTerminator}*
 
 /* ECMA 7.4: tokens */
 /*Token                         = {IdentifierName} | {Punctuator} | {NumericLiteral} | {StringLiteral}*/
@@ -89,10 +90,13 @@ FutureReservedWord            = "class" | "enum" | "extends" | "super" | "const"
 
 FutureReservedWordStrict      = "implements" | "let" | "private" | "public" | "yield" | "interface" | "package" | "protected" | "static"
 
-Punctuator                    = "{" | "}" | "(" | ")" | "[" | "]" | "." | ";" | "," | "<" | ">" | "<=" | ">=" | 
+Punctuator                    = {PreDivPunctuator} | "{" | "}" | "(" | "[" | "." | ";" | "," | "<" | ">" |  
                                 "==" | "!=" | "===" | "!==" | "+" | "-" | "*" | "%" | "++" | "--" | "<<" | 
                                 ">>" | ">>>" | "&" | "|" | "^" | "!" | "~" | "&&" | "||" | "?" | ":" | "=" | 
-                                "+=" | "-=" | "*=" | "%=" | "<<=" | ">>=" | ">>>=" | "&=" | "|=" | "^="
+                                "+=" | "-=" | "*=" | "%=" | "<<=" | ">>=" | ">>>=" | "&=" | "|=" | "^=" |
+                                "<=" | ">=" 
+                                
+PreDivPunctuator              = ")" | "]"
                                  
 DivPunctuator                 = "/" | "/="
 
@@ -151,32 +155,32 @@ HexEscapeSequence             = "x" {HexDigit} {HexDigit}
 UnicodeEscapeSequence         = "u" {HexDigit} {HexDigit} {HexDigit} {HexDigit}
 
 /* ECMA 7.8.5 Regular Expression Literals */
-RegularExpressionLiteral      = "/" {RegularExpressionBody} "/" {RegularExpressionFlags}
+RegularExpressionLiteral      = "/a" {RegularExpressionBody} "/" {RegularExpressionFlags}
 RegularExpressionBody         = {RegularExpressionFirstChar} {RegularExpressionChars}
 RegularExpressionChars        = {RegularExpressionChar}*
-RegularExpressionFirstChar    = (!(!{RegularExpressionNonTerm}|[\*\\\/\[])) |
+RegularExpressionFirstChar    = ([^\r\n\u2028\u2029\*\\\/\[]) |
                                 {RegularExpressionBSlashSeq} |
                                 {RegularExpressionClass}
                                 
-RegularExpressionChar         = (!(!{RegularExpressionNonTerm}|[\\\/\[])) |
+RegularExpressionChar         = ([^\r\n\u2028\u2029\\\/\[]) |
                                 {RegularExpressionBSlashSeq} |
                                 {RegularExpressionClass}
                                 
 RegularExpressionBSlashSeq    = "\\" {RegularExpressionNonTerm}
 
-RegularExpressionNonTerm      = !{LineTerminator}
+RegularExpressionNonTerm      = {NotLineTerminator}
 
 RegularExpressionClass        = "[" {RegularExpressionClassChars} "]"
 
 RegularExpressionClassChars   = {RegularExpressionClassChar}*
 
-RegularExpressionClassChar    = (!(!{RegularExpressionNonTerm}|[\\\[])) | {RegularExpressionBSlashSeq}
+RegularExpressionClassChar    = ([^\r\n\u2028\u2029\\\[]) | {RegularExpressionBSlashSeq}
 
-RegularExpressionFlags        = {IdentifierPart}
+RegularExpressionFlags        = {IdentifierPart}*
+
+%state DIV_ONLY
 
 %%
-
-<YYINITIAL> {
 
 {LineTerminatorSequence}      { return new JsFlexToken(JsFlexToken.TOKEN_LINE_TERMINATOR, JsFlexToken.LINE_TERMINATOR, yyline, yycolumn); }
 
@@ -184,31 +188,85 @@ RegularExpressionFlags        = {IdentifierPart}
 
 {Comment}                     { return new JsFlexToken(yytext(), JsFlexToken.COMMENT, yyline, yycolumn); }
 
-{Keyword}                     { return new JsFlexToken(yytext().intern(), JsFlexToken.RESERVED | JsFlexToken.RESERVED_KEYWORD, yyline, yycolumn); }
+{Keyword}                     {
+                                  yybegin(YYINITIAL);
+                                  return new JsFlexToken(yytext().intern(), 
+                                          JsFlexToken.RESERVED | JsFlexToken.RESERVED_KEYWORD, yyline, yycolumn); 
+                              }
 
-{FutureReservedWordStrict}    { return new JsFlexToken(yytext().intern(), JsFlexToken.RESERVED | JsFlexToken.FUTURE_RESERVED_STRICT, yyline, yycolumn); }
+{FutureReservedWordStrict}    { 
+                                  yybegin(YYINITIAL);
+                                  return new JsFlexToken(yytext().intern(), 
+                                          JsFlexToken.RESERVED | JsFlexToken.FUTURE_RESERVED_STRICT, yyline, yycolumn);
+                              }
 
-{FutureReservedWord}          { return new JsFlexToken(yytext().intern(), JsFlexToken.RESERVED | JsFlexToken.FUTURE_RESERVED, yyline, yycolumn); }
+{FutureReservedWord}          { 
+                                  yybegin(YYINITIAL);
+                                  return new JsFlexToken(yytext().intern(), 
+                                          JsFlexToken.RESERVED | JsFlexToken.FUTURE_RESERVED, yyline, yycolumn); 
+                              }
 
-{Punctuator}                  { return new JsFlexToken(yytext().intern(), JsFlexToken.PUNKTUATOR | JsFlexToken.ANY_PUNKTUATOR, yyline, yycolumn); }
+{PreDivPunctuator}            { 
+                                  yybegin(DIV_ONLY);
+                                  return new JsFlexToken(yytext().intern(), JsFlexToken.PUNKTUATOR | 
+                                          JsFlexToken.ANY_PUNKTUATOR, yyline, yycolumn);
+                              }
+                              
+{Punctuator}                  { 
+                                  yybegin(YYINITIAL);
+                                  return new JsFlexToken(yytext().intern(), JsFlexToken.PUNKTUATOR | 
+                                          JsFlexToken.ANY_PUNKTUATOR, yyline, yycolumn);
+                              }
 
-{DivPunctuator}               { return new JsFlexToken(yytext().intern(), JsFlexToken.DIV_PUNKTUATOR | JsFlexToken.ANY_PUNKTUATOR, yyline, yycolumn); }
+{DivPunctuator}               { 
+                                  yybegin(YYINITIAL);
+                                  return new JsFlexToken(yytext().intern(), JsFlexToken.DIV_PUNKTUATOR | 
+                                          JsFlexToken.ANY_PUNKTUATOR, yyline, yycolumn);
+                              }
 
-{NullLiteral}                 { return new JsFlexToken(yytext().intern(), JsFlexToken.RESERVED | JsFlexToken.RESERVED_KEYWORD | 
-                                                                          JsFlexToken.LITERAL | JsFlexToken.NULL_LITERAL, yyline, yycolumn); }
+{NullLiteral}                 {
+                                  yybegin(DIV_ONLY);
+                                  return new JsFlexToken(yytext().intern(), JsFlexToken.RESERVED | 
+                                          JsFlexToken.RESERVED_KEYWORD | JsFlexToken.LITERAL | 
+                                          JsFlexToken.NULL_LITERAL, yyline, yycolumn); 
+                              }
                                                                           
-{BooleanLiteral}              { return new JsFlexToken(yytext().intern(), JsFlexToken.RESERVED | JsFlexToken.RESERVED_KEYWORD |
-                                                                          JsFlexToken.LITERAL | JsFlexToken.BOOLEAN_LITERAL, yyline, yycolumn); }
+{BooleanLiteral}              {
+                                  yybegin(DIV_ONLY);
+                                  return new JsFlexToken(yytext().intern(), 
+                                          JsFlexToken.RESERVED | JsFlexToken.RESERVED_KEYWORD |
+                                          JsFlexToken.LITERAL | JsFlexToken.BOOLEAN_LITERAL, yyline, yycolumn); 
+                              }
                                                                           
-{NumbericLiteral}             { return new JsFlexToken(yytext(), JsFlexToken.LITERAL | JsFlexToken.NUMERIC_LITERAL, yyline, yycolumn); }
+{NumbericLiteral}             {
+                                  yybegin(DIV_ONLY);
+                                  return new JsFlexToken(yytext(), JsFlexToken.LITERAL | 
+                                          JsFlexToken.NUMERIC_LITERAL, yyline, yycolumn); 
+                              }
 
-{StringLiteral}               { return new JsFlexToken(yytext(), JsFlexToken.LITERAL | JsFlexToken.STRING_LITERAL, yyline, yycolumn); }
-{RegularExpressionLiteral}    { return new JsFlexToken(yytext(), JsFlexToken.LITERAL | JsFlexToken.REGEXP_LITERAL, yyline, yycolumn); }
+{StringLiteral}               { 
+                                  yybegin(DIV_ONLY);
+                                  return new JsFlexToken(yytext(), JsFlexToken.LITERAL | 
+                                          JsFlexToken.STRING_LITERAL, yyline, yycolumn); 
+                              }
 
-{IdentifierName}              { return new JsFlexToken(yytext(), JsFlexToken.IDENTIFIER, yyline, yycolumn); }
+{IdentifierName}              { 
+                                  yybegin(DIV_ONLY);
+                                  return new JsFlexToken(yytext(), JsFlexToken.IDENTIFIER, yyline, yycolumn); 
+                              }
+
+<YYINITIAL> {
+
+{RegularExpressionLiteral}    {
+                                  yybegin(DIV_ONLY);
+                                  return new JsFlexToken(yytext(), JsFlexToken.LITERAL | 
+                                          JsFlexToken.REGEXP_LITERAL, yyline, yycolumn); 
+                              }
+
 }
 
 .|\n  {
   /*Error fallback: matches any input*/
+  yybegin(YYINITIAL);
   return new JsFlexToken(yytext(), JsFlexToken.ERROR, yyline, yycolumn);
 }
