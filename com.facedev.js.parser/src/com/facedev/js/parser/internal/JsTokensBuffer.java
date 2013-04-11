@@ -40,6 +40,10 @@ class JsTokensBuffer {
 				last = node;
 				return true;
 			}
+
+			public void forward() {
+				node = node.next;
+			}
 			
 		};
 	}
@@ -135,4 +139,9 @@ interface SavePoint {
 	 * @return always <code>true</code> for convenience
 	 */
 	boolean rollback();
+
+	/**
+	 * Moves savepoint forward on the tokens chain
+	 */
+	void forward();
 }

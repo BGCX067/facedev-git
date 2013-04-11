@@ -11,4 +11,10 @@ public interface JsPunctuators {
 	String OPEN_BRACKET = "(";
 	
 	String CLOSE_BRACKET = ")";
+	
+	String OPEN_SQUARE_BRACKET = "[";
+	
+	String CLOSE_SQUARE_BRACKET = "]";
+	
+	String COMA = ",";
 }

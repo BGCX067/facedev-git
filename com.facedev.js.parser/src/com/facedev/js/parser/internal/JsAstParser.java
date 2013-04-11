@@ -60,9 +60,36 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 		return false;
 	}
 
-	private boolean ArrayLiteral() {
+	private boolean ArrayLiteral() throws IOException, JsParseException {
+		SavePoint save = buffer.createSavePoint();
+		return (
+				save.rollback() && buffer.isPunktuator(OPEN_SQUARE_BRACKET) && Ellision() && buffer.isPunktuator(CLOSE_SQUARE_BRACKET) ) || (
+				save.rollback() && buffer.isPunktuator(OPEN_SQUARE_BRACKET) && ElementsList() && buffer.isPunktuator(CLOSE_SQUARE_BRACKET) ) || (
+				save.rollback() && buffer.isPunktuator(OPEN_SQUARE_BRACKET) && ElementsList() && 
+					buffer.isPunktuator(COMA) && Ellision() && buffer.isPunktuator(CLOSE_SQUARE_BRACKET) 
+			);
+	}
+
+	private boolean ElementsList() throws IOException, JsParseException {
+		SavePoint save = buffer.createSavePoint();
+		return (
+				save.rollback() && Ellision() && AssignmentExpression() && buffer.isPunktuator(COMA) && ElementsList()) || (
+				save.rollback() && Ellision() && AssignmentExpression()
+			);
+	}
+
+	private boolean AssignmentExpression() {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	private boolean Ellision() throws IOException, JsParseException {
+		SavePoint save = buffer.createSavePoint();
+		while (buffer.isPunktuator(COMA)) {
+			save.forward();
+		}
+		save.rollback();
+		return true;
 	}
 
 }
