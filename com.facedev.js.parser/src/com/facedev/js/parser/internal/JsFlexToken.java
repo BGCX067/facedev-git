@@ -106,8 +106,8 @@ final class JsFlexToken implements Token {
 	JsFlexToken(String data, int state, int line, int column) {
 		this.data = data;
 		this.state = state;
-		this.line = line;
-		this.column = column;
+		this.line = line + 1;
+		this.column = column + 1;
 	}
 
 	/*

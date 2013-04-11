@@ -186,8 +186,13 @@ public class TokenizerTestCase {
 		assertEquals("aaa", tok.toString());
 		assertEquals(2, tok.getLine());
 		assertEquals(1, tok.getOffset());
+		
+		assertTrue(tokenizer.next().isWhiteSpace());
+		
 		assertEquals("/* this is other \n multi line \n comment */", tokenizer
 				.next().toString());
+		
+		assertTrue(tokenizer.next().isWhiteSpace());
 
 		tok = tokenizer.next();
 		assertEquals("bbb", tok.toString());
@@ -220,11 +225,15 @@ public class TokenizerTestCase {
 		assertEquals(2, tok.getLine());
 		assertEquals(1, tok.getOffset());
 
+		assertTrue(tokenizer.next().isWhiteSpace());
+		
 		tok = tokenizer.next();
 		assertEquals("/* this is other \n multi line \n comment */",
 				tok.toString());
 		assertEquals(2, tok.getLine());
 		assertEquals(5, tok.getOffset());
+		
+		assertTrue(tokenizer.next().isWhiteSpace());
 
 		tok = tokenizer.next();
 		assertEquals("bbb", tok.toString());
@@ -240,6 +249,8 @@ public class TokenizerTestCase {
 		assertEquals("ccc", tok.toString());
 		assertEquals(5, tok.getLine());
 		assertEquals(1, tok.getOffset());
+		
+		assertTrue(tokenizer.next().isWhiteSpace());
 
 		tok = tokenizer.next();
 		assertEquals("23", tok.toString());
@@ -247,10 +258,15 @@ public class TokenizerTestCase {
 		assertEquals(5, tok.getOffset());
 		
 		assertTrue(tokenizer.next().isLineTerminator());
+		assertTrue(tokenizer.next().isWhiteSpace());
 		assertTrue(tokenizer.next().isLineTerminator());
+		assertTrue(tokenizer.next().isWhiteSpace());
 		assertTrue(tokenizer.next().isLineTerminator());
+		assertTrue(tokenizer.next().isWhiteSpace());
 		assertTrue(tokenizer.next().isLineTerminator());
+		assertTrue(tokenizer.next().isWhiteSpace());
 		assertTrue(tokenizer.next().isLineTerminator());
+		assertTrue(tokenizer.next().isWhiteSpace());
 
 		tok = tokenizer.next();
 		assertEquals("aa", tok.toString());
@@ -285,10 +301,16 @@ public class TokenizerTestCase {
 		
 		assertTrue(tokenizer.next().isLineTerminator());
 		
-		assertTrue(tokenizer.next().isNumberLiteral());
+		assertTrue(tokenizer.next().isWhiteSpace());
 		assertTrue(tokenizer.next().isNumberLiteral());
 		
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertTrue(tokenizer.next().isNumberLiteral());
+		
+		assertTrue(tokenizer.next().isWhiteSpace());
 		assertTrue(tokenizer.next().isIdentifier());
+		
+		assertTrue(tokenizer.next().isWhiteSpace());
 		
 		Token tok = tokenizer.next();
 		assertFalse(tok.isIdentifier());
@@ -296,15 +318,29 @@ public class TokenizerTestCase {
 		assertTrue(tok.isKeyword());
 		assertTrue(tok.isKeyword(JsKeywords.KEYWORD_CASE));
 		
-		assertTrue(tokenizer.next().isLineTerminator());
-		assertTrue(tokenizer.next().isLineTerminator());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		
+		assertTrue(tokenizer.next().isPunctuator());
+		
+		assertTrue(tokenizer.next().isWhiteSpace());
 		assertTrue(tokenizer.next().isLineTerminator());
 		
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertTrue(tokenizer.next().isLineTerminator());
+		
+		assertTrue(tokenizer.next().isWhiteSpace());
 		assertTrue(tokenizer.next().isRegexpLiteral());
+		
+		assertTrue(tokenizer.next().isWhiteSpace());
 		assertFalse(tokenizer.next().isRegexpLiteral());
 		
+		assertTrue(tokenizer.next().isWhiteSpace());
 		assertTrue(tokenizer.next().isStringLiteral());
+		
+		assertTrue(tokenizer.next().isWhiteSpace());
 		assertTrue(tokenizer.next().isStringLiteral());
+		
+		assertTrue(tokenizer.next().isWhiteSpace());
 		
 		assertNull(tokenizer.next());
 	}

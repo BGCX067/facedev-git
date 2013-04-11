@@ -25,6 +25,31 @@ import com.facedev.js.parser.JsKeywords;
   JsFlexToken next() throws java.io.IOException, JsParseException {
     return nextToken();
   }
+  
+  /**
+   * Replaces unicode escape sequences (\uxxxx) in the text provided to real characters.
+   */
+  private String unescape(String text) {
+    int length = text.length();
+    int escEnd = length - 5;
+    StringBuilder result = new StringBuilder(escEnd+1);
+    for (int i = 0; i < length; i++) {
+      char c = text.charAt(i);
+      if (c != '\\' || (i >= escEnd)) {
+        result.append(c);
+        continue;
+      }
+      if (text.charAt(++i) != 'u') {
+        result.append(text.charAt(i));
+        continue;
+      }
+      i++;
+      int start = i;
+      i += 3;
+      result.appendCodePoint(Integer.parseInt(text.substring(start, i+1), 16));
+    }
+    return result.toString();
+  }
 %}
 
 /* ECMA 7.2: white spaces definition */
@@ -51,7 +76,7 @@ SingleLineCommentChars        = {NotLineTerminator}*
 
 /* ECMA 7.5 identifiers & identifiers names */
 IdentifierName                = {IdentifierStart}{IdentifierPart}*
-IdentifierStart               = [:letter:]|[\$_]|("\\"{UnicodeEscapeSequence})
+IdentifierStart               = [:letter:]|[\$_]
 IdentifierPart                = {IdentifierStart}|{OtherIdentifierPart}
 /* precompiled {UnicodeCombiningMark} | {UnicodeDigit} | {UnicodeConnectorPunctuation} | <ZWNJ> | <ZWJ> */
 OtherIdentifierPart           = [\u0030-\u0039\u005f\u0300-\u036f\u0483-\u0487\u0591-\u05bd\u05bf\u05c1\u05c2\u05c4\u05c5\u05c7\u0610-\u061a] |
@@ -78,6 +103,8 @@ OtherIdentifierPart           = [\u0030-\u0039\u005f\u0300-\u036f\u0483-\u0487\u
                                 [\ua926-\ua92d\ua947-\ua953\ua980-\ua983\ua9b3-\ua9c0\ua9d0-\ua9d9\uaa29-\uaa36\uaa43\uaa4c\uaa4d\uaa50-\uaa59] |
                                 [\uaa7b\uaab0\uaab2-\uaab4\uaab7\uaab8\uaabe\uaabf\uaac1\uaaeb-\uaaef\uaaf5\uaaf6\uabe3-\uabea\uabec\uabed] |
                                 [\uabf0-\uabf9\ufb1e\ufe00-\ufe0f\ufe20-\ufe26\ufe33\ufe34\ufe4d-\ufe4f\uff10-\uff19\uff3f]
+                                
+IdentifierNameEscaped         = ({IdentifierStart}|("\\"{UnicodeEscapeSequence}))({IdentifierPart}|("\\"{UnicodeEscapeSequence}))*
                                 
 /* ECMA 7.6.1 - reserved worlds */
 /*ReservedWord                  = {Keyword} | {FutureReservedWord} | {NullLiteral} | {BooleanLiteral}*/
@@ -132,12 +159,12 @@ HexDigit                      = [0-9a-fA-F]
 StringLiteral                 = ("\"" {DoubleStringCharacters}? "\"") |
                                 ("'" {SingleStringCharacters}? "'")
 DoubleStringCharacters        = {DoubleStringCharacter}+
-DoubleStringCharacter         = (!([\"\\]|{LineTerminator})) |
+DoubleStringCharacter         = (([^\"\\]|{NotLineTerminator})) |
                                 ("\\" {EscapeSequence}) |
                                 {LineContinuation}
 
 SingleStringCharacters        = {SingleStringCharacter}+
-SingleStringCharacter         = (!([\'\\]|{LineTerminator})) |
+SingleStringCharacter         = (([^\'\\]|{NotLineTerminator})) |
                                 ("\\" {EscapeSequence}) |
                                 ("\\0") |
                                 {LineContinuation}
@@ -155,7 +182,7 @@ HexEscapeSequence             = "x" {HexDigit} {HexDigit}
 UnicodeEscapeSequence         = "u" {HexDigit} {HexDigit} {HexDigit} {HexDigit}
 
 /* ECMA 7.8.5 Regular Expression Literals */
-RegularExpressionLiteral      = "/a" {RegularExpressionBody} "/" {RegularExpressionFlags}
+RegularExpressionLiteral      = "/" {RegularExpressionBody} "/" {RegularExpressionFlags}
 RegularExpressionBody         = {RegularExpressionFirstChar} {RegularExpressionChars}
 RegularExpressionChars        = {RegularExpressionChar}*
 RegularExpressionFirstChar    = ([^\r\n\u2028\u2029\*\\\/\[]) |
@@ -253,6 +280,11 @@ RegularExpressionFlags        = {IdentifierPart}*
 {IdentifierName}              { 
                                   yybegin(DIV_ONLY);
                                   return new JsFlexToken(yytext(), JsFlexToken.IDENTIFIER, yyline, yycolumn); 
+                              }
+                              
+{IdentifierNameEscaped}       { 
+                                  yybegin(DIV_ONLY);
+                                  return new JsFlexToken(unescape(yytext()), JsFlexToken.IDENTIFIER, yyline, yycolumn); 
                               }
 
 <YYINITIAL> {
