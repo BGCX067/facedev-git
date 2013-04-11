@@ -19,19 +19,15 @@ public interface JsParseLogger {
 		ERROR
 	}
 	
+	public enum Message {
+		SYNTAX_ERROR;
+	}
+	
 	/**
-	 * Logs message of level specified for single token.
+	 * Logs message of level specified.
 	 * @param level
 	 * @param message
 	 * @param token
 	 */
-	void log(Level level, String message, Token token);
-	
-	/**
-	 * Logs message of level for descriptor.
-	 * @param level
-	 * @param message
-	 * @param descriptor
-	 */
-	void log(Level level, String message, JsSyntaxNode descriptor);
+	void log(Level level, Message message, Token...tokens);
 }

@@ -160,10 +160,10 @@ final class JsFlexToken implements Token {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.facedev.js.parser.Token#isKeyword(java.lang.String)
+	 * @see com.facedev.js.parser.Token#isSame(java.lang.String)
 	 */
-	public boolean isKeyword(String keyword) {
-		return data == keyword;
+	public boolean isSame(String value) {
+		return data == value;
 	}
 
 	/*

@@ -1,55 +1,68 @@
 package com.facedev.js.parser.internal;
 
-import java.net.URI;
+import java.io.IOException;
+import java.util.List;
 
-import com.facedev.js.parser.JsCompilationUnit;
+import com.facedev.js.parser.JsKeywords;
 import com.facedev.js.parser.JsParseException;
 import com.facedev.js.parser.JsParseLogger;
-import com.facedev.js.parser.JsParser;
+import com.facedev.js.parser.JsPunctuators;
 
 /**
- * Abstract syntax tree (AST) based implementation of javascript parser.
- * Instances of this class are not thread safe, so should be used only in 
- * single thread. 
+ * Top-down implementation of javascript parser. Builds abstract syntax tree (AST) from stream of tokens. 
+ * 
+ * Note that this class violates java naming convention (method should start with lowercase) bacause it uses
+ * own convention to follow naming from the ECMA-262 lexical specification
  * 
  * @author alex.bereznevatiy@gmail.com
- * 
  */
-public class JsAstParser extends JsParser {
+class JsAstParser implements JsKeywords, JsPunctuators {
 	
-	private URI uri;
+	private JsTokensBuffer buffer;
 	private JsParseLogger logger;
 
-	public JsAstParser(URI uri) {
-		this.uri = uri;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.facedev.js.parser.JsParser#parse(com.facedev.js.parser.JsParseLogger)
-	 */
-	@Override
-	public JsCompilationUnit parse(JsParseLogger logger) throws JsParseException {
-//		TokenSource source = createTokenSource();
-		setLogger(logger);
-		return null;
-	}
-
-	/**
-	 * @return new token source for the reader associated
-	 */
-//	TokenSource createTokenSource() {
-//		return null;//new CommentsTokenFilter(new Tokenizer(uri.toURL().openStream()));
-//	}
-
-	/**
-	 * @return logger associated with this parser.
-	 */
-	JsParseLogger getLogger() {
-		return logger;
-	}
-	
-	void setLogger(JsParseLogger logger) {
+	JsAstParser(JsTokenizer tokenizer, JsParseLogger logger) throws IOException, JsParseException {
+		this.buffer = new JsTokensBuffer(tokenizer);
 		this.logger = logger;
 	}
+
+	/**
+	 * @return list of global nodes of AST.
+	 * @throws JsParseException 
+	 * @throws IOException 
+	 */
+	List<JsSyntaxNode> parse() throws IOException, JsParseException {
+		// TODO Auto-generated method stub
+		PrimaryExpression();
+		return null;
+	}
+	
+	private boolean PrimaryExpression() throws IOException, JsParseException {
+		SavePoint save = buffer.createSavePoint();
+		return (
+			save.rollback() && buffer.keyword(KEYWORD_THIS)                                                                )||(
+			save.rollback() && buffer.isIdentifier()                                                                       )||(
+			save.rollback() && buffer.isLiteral()                                                                          )||(
+			save.rollback() && ArrayLiteral()                                                                              )||(
+			save.rollback() && ObjectLiteral()                                                                             )||(
+			save.rollback() && buffer.isPunktuator(OPEN_BRACKET) && Expression() && buffer.isPunktuator(CLOSE_BRACKET)                       
+		);
+				
+	}
+
+	private boolean Expression() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	private boolean ObjectLiteral() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	private boolean ArrayLiteral() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

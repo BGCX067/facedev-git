@@ -1,9 +1,8 @@
 package com.facedev.js.parser;
 
-import java.io.Reader;
 import java.net.URI;
 
-import com.facedev.js.parser.internal.JsAstParser;
+import com.facedev.js.parser.internal.JsAnalyser;
 
 /**
  * Abstract entry point for javascript parser.
@@ -18,12 +17,14 @@ public abstract class JsParser {
 	
 	/**
 	 * Creates parser based on reader.
-	 * @param reader
-	 * @return new parser instance.
+	 * 
+	 * @param resource
+	 * @param charsetName
+	 * @return JsParser instance
 	 * @throws JsParseException in case of serious trouble.
 	 */
-	public static JsParser create(URI resource) throws JsParseException {
-		return new JsAstParser(resource);
+	public static JsParser create(URI resource, String charsetName) throws JsParseException {
+		return new JsAnalyser(resource, charsetName);
 	}
 
 	/**

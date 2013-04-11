@@ -29,13 +29,6 @@ public interface Token extends CharSequence {
 	boolean isIdentifier();
 	
 	/**
-	 * @param keyword (<b>must</b> be interned with {@link String#intern()}).
-	 * @return <code>true</code> if this token is equal to keyword passed.
-	 * Otherwise returns <code>false</code>.
-	 */
-	boolean isKeyword(String keyword);
-	
-	/**
 	 * @return <code>true</code> if this token represents one of the 
 	 * javascript language keywords. 
 	 */
@@ -120,6 +113,14 @@ public interface Token extends CharSequence {
 	 * @return <code>true</code> if this token is error token and cannot be recognized by tokenizer.
 	 */
 	boolean isError();
+	
+	/**
+	 * Useful fast method for keywords and punctuators.
+	 * @param interned with {@link String#intern()}) string.
+	 * @return <code>true</code> if this token is equal to value passed.
+	 * Otherwise returns <code>false</code>.
+	 */
+	boolean isSame(String value);
 
 	/**
 	 * @return line first character of this token belong to.

@@ -316,7 +316,7 @@ public class TokenizerTestCase {
 		assertFalse(tok.isIdentifier());
 		assertTrue(tok.isReserved());
 		assertTrue(tok.isKeyword());
-		assertTrue(tok.isKeyword(JsKeywords.KEYWORD_CASE));
+		assertTrue(tok.isSame(JsKeywords.KEYWORD_CASE));
 		
 		assertTrue(tokenizer.next().isWhiteSpace());
 		
