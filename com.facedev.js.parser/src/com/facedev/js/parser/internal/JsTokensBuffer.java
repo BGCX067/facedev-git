@@ -71,7 +71,7 @@ class JsTokensBuffer {
 	 * @throws IOException
 	 * @throws JsParseException
 	 */
-	boolean keyword(String keyword) throws IOException, JsParseException {
+	boolean isKeyword(String keyword) throws IOException, JsParseException {
 		JsFlexToken tok = next();
 		return tok != null && tok.isKeyword() && tok.isSame(keyword);
 	}
@@ -101,6 +101,17 @@ class JsTokensBuffer {
 		Token tok = next();
 		return tok != null && tok.isIdentifier();
 	}
+	
+	/**
+	 * @param identifier
+	 * @return <code>true</code> if next toke matches specific identifier.
+	 * @throws JsParseException 
+	 * @throws IOException 
+	 */
+	boolean isIdentifier(String identifier) throws IOException, JsParseException {
+		Token tok = next();
+		return tok != null && tok.isIdentifier() && tok.equalsTo(identifier);
+	}
 
 	/**
 	 * @return <code>true</code> if next token is literal.
@@ -112,6 +123,32 @@ class JsTokensBuffer {
 		return tok != null && tok.isLiteral();
 	}
 
+	/**
+	 * @return <code>true</code> if next token is string literal.
+	 * @throws JsParseException 
+	 * @throws IOException 
+	 */
+	boolean isStringLiteral() throws IOException, JsParseException {
+		Token tok = next();
+		return tok != null && tok.isStringLiteral();
+	}
+
+	/**
+	 * @return <code>true</code> if next token is numeric literal.
+	 * @throws JsParseException 
+	 * @throws IOException 
+	 */
+	boolean isNumericLiteral() throws IOException, JsParseException {
+		Token tok = next();
+		return tok != null && tok.isNumberLiteral();
+	}
+
+	/**
+	 * @param punctuator
+	 * @return <code>true</code> if next token matches specific punktuator.
+	 * @throws IOException
+	 * @throws JsParseException
+	 */
 	boolean isPunktuator(String punctuator) throws IOException, JsParseException {
 		Token tok = next();
 		return tok != null && tok.isSame(punctuator);

@@ -67,11 +67,11 @@ public class JsTokensBufferTestCase {
 	@Test
 	public void testKeyword() throws IOException, JsParseException {
 		JsTokensBuffer buf = prepare("this case thisa");
-		assertTrue(buf.keyword(JsKeywords.KEYWORD_THIS));
+		assertTrue(buf.isKeyword(JsKeywords.KEYWORD_THIS));
 		assertTrue(buf.isWhiteSpace());
-		assertFalse(buf.keyword(JsKeywords.KEYWORD_THIS));
+		assertFalse(buf.isKeyword(JsKeywords.KEYWORD_THIS));
 		assertTrue(buf.isWhiteSpace());
-		assertFalse(buf.keyword(JsKeywords.KEYWORD_THIS));
+		assertFalse(buf.isKeyword(JsKeywords.KEYWORD_THIS));
 	}
 
 }

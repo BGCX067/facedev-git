@@ -16,5 +16,13 @@ public interface JsPunctuators {
 	
 	String CLOSE_SQUARE_BRACKET = "]";
 	
+	String OPEN_CURVY_BRACKET = "{";
+	
+	String CLOSE_CURVY_BRACKET = "}";
+	
 	String COMA = ",";
+	
+	String COLON = ":";
+	
+	String DOT = ".";
 }
