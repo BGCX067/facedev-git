@@ -98,6 +98,11 @@ final class JsFlexToken implements Token {
 	 */
 	static final int ERROR = 0x020000;
 	
+	/**
+	 * This tokens are ignored by the parser (except line terminators that may be taken into account)
+	 */
+	static final int IGNORED = 0x040000;
+	
 	private final String data;
 	private final int state;
 	private final int line;
@@ -300,6 +305,14 @@ final class JsFlexToken implements Token {
 	 */
 	public boolean isError() {
 		return (state & ERROR) > 0;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.facedev.js.parser.Token#isIgnored()
+	 */
+	public boolean isIgnored() {
+		return (state & IGNORED) > 0;
 	}
 
 	/*

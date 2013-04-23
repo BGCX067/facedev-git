@@ -27,7 +27,7 @@ import com.facedev.js.parser.JsKeywords;
   }
   
   /**
-   * Replaces unicode escape sequences (\uxxxx) in the text provided to real characters.
+   * Replaces unicode escape sequences (\\uxxxx) in the text provided to real characters.
    */
   private String unescape(String text) {
     int length = text.length();
@@ -209,11 +209,13 @@ RegularExpressionFlags        = {IdentifierPart}*
 
 %%
 
-{LineTerminatorSequence}      { return new JsFlexToken(JsFlexToken.TOKEN_LINE_TERMINATOR, JsFlexToken.LINE_TERMINATOR, yyline, yycolumn); }
+{LineTerminatorSequence}      { return new JsFlexToken(JsFlexToken.TOKEN_LINE_TERMINATOR, JsFlexToken.LINE_TERMINATOR | 
+                                          JsFlexToken.IGNORED, yyline, yycolumn); }
 
-{WhiteSpaceBlock}             { return new JsFlexToken(JsFlexToken.TOKEN_WHITE_SPACE, JsFlexToken.WHITE_SPACE, yyline, yycolumn); }
+{WhiteSpaceBlock}             { return new JsFlexToken(JsFlexToken.TOKEN_WHITE_SPACE, JsFlexToken.WHITE_SPACE |  
+                                          JsFlexToken.IGNORED, yyline, yycolumn); }
 
-{Comment}                     { return new JsFlexToken(yytext(), JsFlexToken.COMMENT, yyline, yycolumn); }
+{Comment}                     { return new JsFlexToken(yytext(), JsFlexToken.COMMENT | JsFlexToken.IGNORED, yyline, yycolumn); }
 
 {Keyword}                     {
                                   yybegin(YYINITIAL);

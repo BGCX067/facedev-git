@@ -115,6 +115,11 @@ public interface Token extends CharSequence {
 	boolean isError();
 	
 	/**
+	 * @return <code>true</code> if token is white space, line terminator or comment
+	 */
+	boolean isIgnored();
+	
+	/**
 	 * Useful fast method for keywords and punctuators.
 	 * @param interned with {@link String#intern()}) string.
 	 * @return <code>true</code> if this token is equal to value passed.

@@ -59,10 +59,21 @@ class JsTokensBuffer {
 			return result;
 		}
 		if (last.next == null) {
-			last.next = new Node(tokenizer.next());
+			last.next = new Node(nextTerminal());
 		}
 		last = last.next;
 		return result;
+	}
+
+	private JsFlexToken nextTerminal() throws IOException, JsParseException {
+		JsFlexToken next = tokenizer.next();
+		while (next != null && next.isIgnored()) {
+			if (next.isLineTerminator() && last != null) {
+				last.terminated = true;
+			}
+			next = tokenizer.next();
+		}
+		return next;
 	}
 
 	/**
@@ -154,9 +165,17 @@ class JsTokensBuffer {
 		return tok != null && tok.isSame(punctuator);
 	}
 	
+	/**
+	 * @return <code>true</code> if last token was followed by line termination sequence.
+	 */
+	boolean isTerminated() {
+		return last != null && last.terminated;
+	}
+	
 	private static class Node {
 		private Node next;
 		private JsFlexToken token;
+		public boolean terminated;
 		
 		Node(JsFlexToken token) {
 			this.token = token;
