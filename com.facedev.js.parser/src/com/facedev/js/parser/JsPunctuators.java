@@ -101,4 +101,6 @@ public interface JsPunctuators {
 	String ASSIGNMENT_XOR = ">>>=";
 	
 	String ASSIGNMENT_OR = ">>>=";
+	
+	String SEMICOLON = ";";
 }

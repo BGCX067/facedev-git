@@ -20,7 +20,7 @@ public interface JsParseLogger {
 	}
 	
 	public enum Message {
-		SYNTAX_ERROR;
+		SYNTAX_ERROR, STATEMENT_HAS_NO_EFFECT, WITH_STATEMENT;
 	}
 	
 	/**

@@ -21,11 +21,12 @@ class JsTokensBuffer {
 	
 	private JsTokenizer tokenizer;
 	
-	private Node last;
+	private Node next;
+	private Node lastReturned;
 	
 	JsTokensBuffer(JsTokenizer tokenizer) throws IOException, JsParseException {
 		this.tokenizer = tokenizer;
-		last = new Node(tokenizer.next());
+		next = new Node(tokenizer.next());
 	}
 	
 	/**
@@ -34,10 +35,10 @@ class JsTokensBuffer {
 	SavePoint createSavePoint() {
 		return new SavePoint() {
 			
-			private Node node = last;
+			private Node node = next;
 
 			public boolean rollback() {
-				last = node;
+				next = node;
 				return true;
 			}
 
@@ -54,22 +55,30 @@ class JsTokensBuffer {
 	 * @throws JsParseException
 	 */
 	JsFlexToken next() throws IOException, JsParseException {
-		JsFlexToken result = last.token;
+		lastReturned = next;
+		if (next == null) {
+			return null;
+		}
+		JsFlexToken result = next.token;
 		if (result == null) {
 			return result;
 		}
-		if (last.next == null) {
-			last.next = new Node(nextTerminal());
+		if (next.next == null) {
+			next.next = new Node(nextTerminal());
 		}
-		last = last.next;
+		next = next.next;
 		return result;
+	}
+
+	JsFlexToken getLastReturned() {
+		return lastReturned == null ? null : lastReturned.token;
 	}
 
 	private JsFlexToken nextTerminal() throws IOException, JsParseException {
 		JsFlexToken next = tokenizer.next();
 		while (next != null && next.isIgnored()) {
-			if (next.isLineTerminator() && last != null) {
-				last.terminated = true;
+			if (next.isLineTerminator() && next != null) {
+				this.next.terminated = true;
 			}
 			next = tokenizer.next();
 		}
@@ -91,7 +100,7 @@ class JsTokensBuffer {
 	 * @return <code>true</code> if this buffer has more tokens.
 	 */
 	boolean hasNext() {
-		return last.token != null;
+		return next!= null && next.token != null;
 	}
 
 	/**
@@ -169,7 +178,7 @@ class JsTokensBuffer {
 	 * @return <code>true</code> if last token was followed by line termination sequence.
 	 */
 	boolean isTerminated() {
-		return last != null && last.terminated;
+		return lastReturned != null && lastReturned.terminated;
 	}
 	
 	private static class Node {
