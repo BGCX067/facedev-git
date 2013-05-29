@@ -27,8 +27,8 @@ public class ParseTestUtils {
 	@SuppressWarnings("unused")
 	private static class ExceptionThrowingLogger implements JsParseLogger {
 
-		public void log(Level level, Message message, Token... tokens) {
-			throw new LogMessageError(level.name() + " - " + message + " on tokens: " + 
+		public void log(Message message, Token... tokens) {
+			throw new LogMessageError(message.name() + " on tokens: " + 
 					Arrays.toString(tokens));
 		}
 		

@@ -24,29 +24,21 @@ public class JsTokensBufferTestCase {
 		JsTokensBuffer buf = prepare("aaa bbb ccc *");
 		SavePoint save1 = buf.createSavePoint();
 		assertEquals("aaa", buf.next().toString());
-		assertTrue(buf.isWhiteSpace());
 		assertEquals("bbb", buf.next().toString());
 		SavePoint save2 = buf.createSavePoint();
-		assertTrue(buf.isWhiteSpace());
 		assertEquals("ccc", buf.next().toString());
-		assertTrue(buf.isWhiteSpace());
 		assertEquals("*", buf.next().toString());
 		assertNull(buf.next());
 		
 		save2.rollback();
-		assertTrue(buf.isWhiteSpace());
 		assertEquals("ccc", buf.next().toString());
-		assertTrue(buf.isWhiteSpace());
 		assertEquals("*", buf.next().toString());
 		assertNull(buf.next());
 		
 		save1.rollback();
 		assertEquals("aaa", buf.next().toString());
-		assertTrue(buf.isWhiteSpace());
 		assertEquals("bbb", buf.next().toString());
-		assertTrue(buf.isWhiteSpace());
 		assertEquals("ccc", buf.next().toString());
-		assertTrue(buf.isWhiteSpace());
 		assertEquals("*", buf.next().toString());
 		assertNull(buf.next());
 	}
@@ -55,11 +47,8 @@ public class JsTokensBufferTestCase {
 	public void testNext() throws IOException, JsParseException {
 		JsTokensBuffer buf = prepare("aaa bbb ccc *");
 		assertEquals("aaa", buf.next().toString());
-		assertEquals(" ", buf.next().toString());
 		assertEquals("bbb", buf.next().toString());
-		assertEquals(" ", buf.next().toString());
 		assertEquals("ccc", buf.next().toString());
-		assertEquals(" ", buf.next().toString());
 		assertEquals("*", buf.next().toString());
 		assertNull(buf.next());
 	}
@@ -68,9 +57,7 @@ public class JsTokensBufferTestCase {
 	public void testKeyword() throws IOException, JsParseException {
 		JsTokensBuffer buf = prepare("this case thisa");
 		assertTrue(buf.isKeyword(JsKeywords.KEYWORD_THIS));
-		assertTrue(buf.isWhiteSpace());
 		assertFalse(buf.isKeyword(JsKeywords.KEYWORD_THIS));
-		assertTrue(buf.isWhiteSpace());
 		assertFalse(buf.isKeyword(JsKeywords.KEYWORD_THIS));
 	}
 

@@ -6,7 +6,6 @@ import java.util.List;
 import com.facedev.js.parser.JsKeywords;
 import com.facedev.js.parser.JsParseException;
 import com.facedev.js.parser.JsParseLogger;
-import com.facedev.js.parser.JsParseLogger.Level;
 import com.facedev.js.parser.JsParseLogger.Message;
 import com.facedev.js.parser.JsPunctuators;
 import com.facedev.js.parser.Token;
@@ -38,7 +37,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 	 */
 	List<JsSyntaxNode> parse() throws IOException, JsParseException {
 		if (!Program()) {
-			throw new JsParseException("Unrecoverable syntax error while parsing file");
+			return null;
 		}
 		return builder.create();
 	}
@@ -213,7 +212,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 
 	private boolean EmptyStatement() throws IOException, JsParseException {
 		if (buffer.isPunktuator(SEMICOLON)) {
-			logger.log(Level.WARN, Message.STATEMENT_HAS_NO_EFFECT, buffer.getLastReturned());
+			logger.log(Message.STATEMENT_HAS_NO_EFFECT, buffer.getLastReturned());
 			return true;
 		}
 		return false;
@@ -321,7 +320,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 		if (!buffer.isKeyword(KEYWORD_WITH)) {
 			return false;
 		}
-		logger.log(Level.WARN, Message.WITH_STATEMENT, buffer.getLastReturned());
+		logger.log(Message.WITH_STATEMENT, buffer.getLastReturned());
 		return buffer.isPunktuator(OPEN_BRACKET) && Expression() && 
 				buffer.isPunktuator(CLOSE_BRACKET) && Statement();
 	}
@@ -339,13 +338,18 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 	}
 
 	private boolean CaseBlock() throws IOException, JsParseException {
+		if (!buffer.isPunktuator(OPEN_CURVY_BRACKET) || !CaseClausesOpt()) {
+			return false;
+		}
 		SavePoint save = buffer.createSavePoint();
-		return (
-			save.rollback() && buffer.isPunktuator(OPEN_CURVY_BRACKET) && CaseClausesOpt() && 
-					buffer.isPunktuator(CLOSE_CURVY_BRACKET) ) || (
-			save.rollback() && buffer.isPunktuator(OPEN_CURVY_BRACKET) && CaseClausesOpt() && 
-					DefaultClause() && CaseClausesOpt() && buffer.isPunktuator(CLOSE_CURVY_BRACKET)
-		);
+		if (!DefaultClause()) {
+			save.rollback();
+			return buffer.isPunktuator(CLOSE_CURVY_BRACKET);
+		}
+		if (!CaseClausesOpt()) {
+			return false;
+		}
+		return buffer.isPunktuator(CLOSE_CURVY_BRACKET);
 	}
 
 	private boolean CaseClausesOpt() throws IOException, JsParseException {
@@ -383,7 +387,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 			return false;
 		}
 		if (buffer.isTerminated()) {
-			logger.log(Level.ERROR, Message.SYNTAX_ERROR, buffer.getLastReturned());
+			logger.log(Message.SYNTAX_ERROR, buffer.getLastReturned());
 			return false;
 		}
 		return Expression() && (buffer.isTerminated() || buffer.isPunktuator(SEMICOLON));
@@ -394,11 +398,12 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 			return false;
 		}
 		SavePoint save = buffer.createSavePoint();
-		return (
-			save.rollback() && Catch() && Finally() ) || ( 
-			save.rollback() && Catch() ) || (
-			save.rollback() && Finally()
-		);
+		boolean catchExists = true;
+		if (!Catch()) {
+			catchExists = false;
+			save.rollback();
+		}
+		return Finally() || catchExists;
 	}
 
 	private boolean Catch() throws IOException, JsParseException {
@@ -424,11 +429,14 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 	 ***********************************************************************************************************/
 	
 	private boolean Expression() throws IOException, JsParseException {
+		if (!AssignmentExpression()) {
+			return false;
+		}
 		SavePoint save = buffer.createSavePoint();
-		return (
-			save.rollback() && AssignmentExpression() && buffer.isPunktuator(COMA) && Expression() ) || (
-			save.rollback() && AssignmentExpression()
-		);
+		if (!buffer.isPunktuator(COMA) || !Expression()) {
+			save.rollback();
+		}
+		return true;
 	}
 
 	private boolean ExpressionNoIn() throws IOException, JsParseException {

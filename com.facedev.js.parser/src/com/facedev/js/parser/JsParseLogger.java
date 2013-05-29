@@ -6,21 +6,11 @@ package com.facedev.js.parser;
  * @author alex.bereznevatiy@gmail.com
  */
 public interface JsParseLogger {
-	
-	/**
-	 * Level of the logging message.
-	 * 
-	 * @author alex.bereznevatiy@gmail.com
-	 *
-	 */
-	public enum Level {
-		INFO,
-		WARN,
-		ERROR
-	}
-	
+		
 	public enum Message {
-		SYNTAX_ERROR, STATEMENT_HAS_NO_EFFECT, WITH_STATEMENT;
+		SYNTAX_ERROR, 
+		STATEMENT_HAS_NO_EFFECT, 
+		WITH_STATEMENT;
 	}
 	
 	/**
@@ -29,5 +19,5 @@ public interface JsParseLogger {
 	 * @param message
 	 * @param token
 	 */
-	void log(Level level, Message message, Token...tokens);
+	void log(Message message, Token...tokens);
 }
