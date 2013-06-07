@@ -31,7 +31,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 	}
 
 	/**
-	 * @return list of global nodes of AST.
+	 * @return list of global nodes of AST or <code>null</code> if parsing fails.
 	 * @throws JsParseException 
 	 * @throws IOException 
 	 */
