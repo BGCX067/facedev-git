@@ -159,7 +159,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 			return false;
 		}
 		return VariableDeclarationList() && 
-				buffer.isTerminated() || buffer.isPunktuator(SEMICOLON);
+				(buffer.isTerminated() || !buffer.hasNext() || buffer.isPunktuator(SEMICOLON));
 	}
 
 	private boolean VariableDeclarationList() throws IOException, JsParseException {

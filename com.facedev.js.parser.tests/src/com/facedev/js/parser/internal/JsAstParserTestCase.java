@@ -57,6 +57,28 @@ public class JsAstParserTestCase {
 		assertTrue(parse("com/facedev/js/parser/internal/resources/jquery-2.0.2.js", getLogger()));
 		assertFalse(isCritical);
 	}
+	
+	@Test
+	public void testFnJqueryEq () throws IOException, JsParseException {
+		assertTrue(parseString("{ eq : function( i ) { \n" +
+		"var len = this.length,\n" +
+			"j = +i + ( i < 0 ? len : 0 );\n" +
+			"return this.pushStack( j >= 0 && j < len ? [ this[j] ] : [] );\n" +
+		"}}", getLogger()));
+		assertFalse(isCritical);
+	}
+	
+	@Test
+	public void testTernary () throws IOException, JsParseException {
+		assertTrue(parseString("var eq = +i + ( i < 0 ? len : 0 );", getLogger()));
+		assertFalse(isCritical);
+	}
+	
+	@Test
+	public void testReturn() throws IOException, JsParseException {
+		assertTrue(parseString("return this.pushStack( j >= 0 && j < len ? [ this[j] ] : [] );\n", getLogger()));
+		assertFalse(isCritical);
+	}
 
 	private boolean parseString(String content, JsParseLogger logger) throws IOException, JsParseException {
 		return parse(new StringReader(content), logger);
