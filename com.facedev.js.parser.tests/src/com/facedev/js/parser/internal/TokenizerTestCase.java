@@ -169,6 +169,31 @@ public class TokenizerTestCase {
 		
 		assertNull(tokenizer.next());
 	}
+	
+	@Test 
+	public void testLiteralsAndComments() throws IOException, JsParseException {
+		JsTokenizer tokenizer = new JsTokenizer(new StringReader(
+				"core_version = \"2.0.2\",\n\n" +
+				"// Save a reference to some core methods\n" +
+				"core_concat = \",\""));
+		assertEquals("core_version", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("=", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("\"2.0.2\"", tokenizer.next().toString());
+		assertEquals(",", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isLineTerminator());
+		assertTrue(tokenizer.next().isLineTerminator());
+		assertTrue(tokenizer.next().isComment());
+		assertTrue(tokenizer.next().isLineTerminator());
+		assertEquals("core_concat", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("=", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("\",\"", tokenizer.next().toString());
+		
+		assertNull(tokenizer.next());
+	}
 
 	@Test
 	public void testComments() throws JsParseException, IOException {

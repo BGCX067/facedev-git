@@ -1,5 +1,6 @@
 package com.facedev.js.parser.internal;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -10,7 +11,6 @@ import java.util.List;
 class JsAstBuilder {
 
 	List<JsSyntaxNode> create() {
-		// TODO Auto-generated method stub
-		return null;
+		return Collections.emptyList();
 	}
 }

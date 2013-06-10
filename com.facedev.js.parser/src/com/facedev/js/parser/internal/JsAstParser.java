@@ -61,6 +61,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 			if (!buffer.isPunktuator(COMA)) {
 				return save.rollback();
 			}
+			save.forward();
 		}
 		return save.rollback();
 	}
@@ -83,13 +84,16 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 	}
 	
 	private boolean Program() throws IOException, JsParseException {
-		return SourceElementsOpt();
+		return SourceElementsOpt() && !buffer.hasNext();
 	}
 	
 	private boolean SourceElementsOpt() throws IOException, JsParseException {
-		while (SourceElement());
+		SavePoint save = buffer.createSavePoint();
+		while (SourceElement()) {
+			save = buffer.createSavePoint();
+		}
 		
-		return !buffer.hasNext();
+		return save.rollback();
 	}
 
 	private boolean SourceElement() throws IOException, JsParseException {
@@ -163,7 +167,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 			return false;
 		}
 		SavePoint save = buffer.createSavePoint();
-		while (VariableDeclaration()) {
+		while (buffer.isPunktuator(COMA) && VariableDeclaration()) {
 			save = buffer.createSavePoint();
 		}
 		return save.rollback();
@@ -174,7 +178,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 			return false;
 		}
 		SavePoint save = buffer.createSavePoint();
-		while (VariableDeclarationNoIn()) {
+		while (buffer.isPunktuator(COMA) && VariableDeclarationNoIn()) {
 			save = buffer.createSavePoint();
 		}
 		return save.rollback();
@@ -203,7 +207,14 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 	}
 
 	private boolean Initializer() throws IOException, JsParseException {
-		return buffer.isPunktuator(ASSIGNMENT) && AssignmentExpression();
+		if (!buffer.isPunktuator(ASSIGNMENT)) {
+			return false;
+		}
+		if (!AssignmentExpression()) {
+			logger.log(Message.SYNTAX_ERROR, buffer.getLastReturned());
+			return false;
+		}
+		return true;
 	}
 
 	private boolean InitializerNoIn() throws IOException, JsParseException {
@@ -221,7 +232,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 	private boolean ExpressionStatement() throws IOException, JsParseException {
 		SavePoint save = buffer.createSavePoint();
 		Token next = buffer.next();
-		if (next.isSame(OPEN_BRACKET) || next.isSame(KEYWORD_FUNCTION)) {
+		if (next == null || next.isSame(OPEN_CURVY_BRACKET) || next.isSame(KEYWORD_FUNCTION)) {
 			return false;
 		}
 		save.rollback();
@@ -544,15 +555,15 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 			return false;
 		}
 		SavePoint save = buffer.createSavePoint();
-		while ((buffer.isPunktuator(DOT) && buffer.isIdentifier()) 
-					|| (
-				buffer.isPunktuator(OPEN_SQUARE_BRACKET) && Expression() && 
-						buffer.isPunktuator(CLOSE_SQUARE_BRACKET))
+		
+		while ((buffer.isPunktuator(DOT) && buffer.isIdentifier()) ||
+				(save.rollback() && buffer.isPunktuator(OPEN_SQUARE_BRACKET) && 
+							Expression() && buffer.isPunktuator(CLOSE_SQUARE_BRACKET)) ||
+				(save.rollback() && Arguments())
 			) {
 			save = buffer.createSavePoint();
 		}
-		save.rollback();
-		return true;
+		return save.rollback();
 	}
 	
 	private boolean SubMemberExpression() throws IOException, JsParseException {
@@ -595,10 +606,13 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 	}
 
 	private boolean Arguments() throws IOException, JsParseException {
+		if (!buffer.isPunktuator(OPEN_BRACKET)) {
+			return false;
+		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && buffer.isPunktuator(OPEN_BRACKET) && buffer.isPunktuator(CLOSE_BRACKET)) || (
-			save.rollback() && buffer.isPunktuator(OPEN_BRACKET) && ArgumentList() && buffer.isPunktuator(CLOSE_BRACKET)
+			save.rollback() && buffer.isPunktuator(CLOSE_BRACKET)) || (
+			save.rollback() && ArgumentList() && buffer.isPunktuator(CLOSE_BRACKET)
 		);
 	}
 
@@ -665,217 +679,287 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 	}
 	
 	private boolean MultiplicativeExpression() throws IOException, JsParseException {
+		if (!UnaryExpression()) {
+			return false;
+		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && UnaryExpression() && buffer.isPunktuator(MULTIPLICATION) && MultiplicativeExpression() ) || (
-			save.rollback() && UnaryExpression() && buffer.isPunktuator(DIVISION) && MultiplicativeExpression() ) || (
-			save.rollback() && UnaryExpression() && buffer.isPunktuator(MODULO) && MultiplicativeExpression() ) || (
-			save.rollback() && UnaryExpression()
+			save.rollback() && buffer.isPunktuator(MULTIPLICATION) && MultiplicativeExpression() ) || (
+			save.rollback() && buffer.isPunktuator(DIVISION) && MultiplicativeExpression() ) || (
+			save.rollback() && buffer.isPunktuator(MODULO) && MultiplicativeExpression() ) || (
+			save.rollback() 
 		);
 	}
 	
 	private boolean AdditiveExpression() throws IOException, JsParseException {
+		
+		if (!MultiplicativeExpression()) {
+			return false;
+		}
+		
 		SavePoint save = buffer.createSavePoint();
 		
 		return (
-			save.rollback() && MultiplicativeExpression() && buffer.isPunktuator(PLUS) && AdditiveExpression() ) || (
-			save.rollback() && MultiplicativeExpression() && buffer.isPunktuator(MINUS) && AdditiveExpression() ) || (
-			save.rollback() && MultiplicativeExpression()
+			save.rollback() && buffer.isPunktuator(PLUS) && AdditiveExpression() ) || (
+			save.rollback() && buffer.isPunktuator(MINUS) && AdditiveExpression() ) || (
+			save.rollback()
 		);
 	}
 	
 	private boolean ShiftExpression() throws IOException, JsParseException {
+		
+		if (!AdditiveExpression()) {
+			return false;
+		}
+		
 		SavePoint save = buffer.createSavePoint();
 		
 		return (
-			save.rollback() && AdditiveExpression() && buffer.isPunktuator(SHIFT_LEFT) && ShiftExpression() ) || (
-			save.rollback() && AdditiveExpression() && buffer.isPunktuator(SHIFT_RIGHT) && ShiftExpression() ) || (
-			save.rollback() && AdditiveExpression() && buffer.isPunktuator(SHIFT_RIGHT_UNSIGNED) && ShiftExpression() ) || (
-			save.rollback() && AdditiveExpression()
+			save.rollback() && buffer.isPunktuator(SHIFT_LEFT) && ShiftExpression() ) || (
+			save.rollback() && buffer.isPunktuator(SHIFT_RIGHT) && ShiftExpression() ) || (
+			save.rollback() && buffer.isPunktuator(SHIFT_RIGHT_UNSIGNED) && ShiftExpression() ) || (
+			save.rollback()
 		);
 	}
 	
 	private boolean RelationalExpression() throws IOException, JsParseException {
+		
+		if (!ShiftExpression()) {
+			return false;
+		}
+		
 		SavePoint save = buffer.createSavePoint();
 		
 		return (
-			save.rollback() && ShiftExpression() && buffer.isPunktuator(LESS) && RelationalExpression() ) || (
-			save.rollback() && ShiftExpression() && buffer.isPunktuator(GREATER) && RelationalExpression() ) || (
-			save.rollback() && ShiftExpression() && buffer.isPunktuator(LESS_OR_EQUAL) && RelationalExpression() ) || (
-			save.rollback() && ShiftExpression() && buffer.isPunktuator(GREATER_OR_EQUAL) && RelationalExpression() ) || (
-			save.rollback() && ShiftExpression() && buffer.isKeyword(JsKeywords.KEYWORD_INSTANCEOF) && RelationalExpression() ) || (
-			save.rollback() && ShiftExpression() && buffer.isKeyword(JsKeywords.KEYWORD_IN) && RelationalExpression() ) || (
-			save.rollback() && ShiftExpression()
+			save.rollback() && buffer.isPunktuator(LESS) && RelationalExpression() ) || (
+			save.rollback() && buffer.isPunktuator(GREATER) && RelationalExpression() ) || (
+			save.rollback() && buffer.isPunktuator(LESS_OR_EQUAL) && RelationalExpression() ) || (
+			save.rollback() && buffer.isPunktuator(GREATER_OR_EQUAL) && RelationalExpression() ) || (
+			save.rollback() && buffer.isKeyword(JsKeywords.KEYWORD_INSTANCEOF) && RelationalExpression() ) || (
+			save.rollback() && buffer.isKeyword(JsKeywords.KEYWORD_IN) && RelationalExpression() ) || (
+			save.rollback()
 		);
 	}
 	
 	private boolean RelationalExpressionNoIn() throws IOException, JsParseException {
+		
+		if (!ShiftExpression()) {
+			return false;
+		}
+		
 		SavePoint save = buffer.createSavePoint();
 		
 		return (
-			save.rollback() && ShiftExpression() && buffer.isPunktuator(LESS) && RelationalExpressionNoIn() ) || (
-			save.rollback() && ShiftExpression() && buffer.isPunktuator(GREATER) && RelationalExpressionNoIn() ) || (
-			save.rollback() && ShiftExpression() && buffer.isPunktuator(LESS_OR_EQUAL) && RelationalExpressionNoIn() ) || (
-			save.rollback() && ShiftExpression() && buffer.isPunktuator(GREATER_OR_EQUAL) && RelationalExpressionNoIn() ) || (
-			save.rollback() && ShiftExpression() && buffer.isKeyword(JsKeywords.KEYWORD_INSTANCEOF) && RelationalExpressionNoIn() ) || (
-			save.rollback() && ShiftExpression()
+			save.rollback() && buffer.isPunktuator(LESS) && RelationalExpressionNoIn() ) || (
+			save.rollback() && buffer.isPunktuator(GREATER) && RelationalExpressionNoIn() ) || (
+			save.rollback() && buffer.isPunktuator(LESS_OR_EQUAL) && RelationalExpressionNoIn() ) || (
+			save.rollback() && buffer.isPunktuator(GREATER_OR_EQUAL) && RelationalExpressionNoIn() ) || (
+			save.rollback() && buffer.isKeyword(JsKeywords.KEYWORD_INSTANCEOF) && RelationalExpressionNoIn() ) || (
+			save.rollback() 
 		);
 	}
 	
 	private boolean EqualityExpression() throws IOException, JsParseException {
+		if (!RelationalExpression()) {
+			return false;
+		}
 		SavePoint save = buffer.createSavePoint();
 		
 		return (
-			save.rollback() && RelationalExpression() && buffer.isPunktuator(EQUALS) && EqualityExpression() ) || (
-			save.rollback() && RelationalExpression() && buffer.isPunktuator(NOT_EQUALS) && EqualityExpression() ) || (
-			save.rollback() && RelationalExpression() && buffer.isPunktuator(STRICT_EQUALS) && EqualityExpression() ) || (
-			save.rollback() && RelationalExpression() && buffer.isPunktuator(STRICT_NOT_EQUALS) && EqualityExpression() ) || (
-			save.rollback() && RelationalExpression()
+			save.rollback() && buffer.isPunktuator(EQUALS) && EqualityExpression() ) || (
+			save.rollback() && buffer.isPunktuator(NOT_EQUALS) && EqualityExpression() ) || (
+			save.rollback() && buffer.isPunktuator(STRICT_EQUALS) && EqualityExpression() ) || (
+			save.rollback() && buffer.isPunktuator(STRICT_NOT_EQUALS) && EqualityExpression() ) || (
+			save.rollback()
 		);
 	}
 	
 	private boolean EqualityExpressionNoIn() throws IOException, JsParseException {
+		if (!RelationalExpressionNoIn()) {
+			return false;
+		}
 		SavePoint save = buffer.createSavePoint();
 		
 		return (
-			save.rollback() && RelationalExpressionNoIn() && buffer.isPunktuator(EQUALS) && EqualityExpressionNoIn() ) || (
-			save.rollback() && RelationalExpressionNoIn() && buffer.isPunktuator(NOT_EQUALS) && EqualityExpressionNoIn() ) || (
-			save.rollback() && RelationalExpressionNoIn() && buffer.isPunktuator(STRICT_EQUALS) && EqualityExpressionNoIn() ) || (
-			save.rollback() && RelationalExpressionNoIn() && buffer.isPunktuator(STRICT_NOT_EQUALS) && EqualityExpressionNoIn() ) || (
-			save.rollback() && RelationalExpressionNoIn()
+			save.rollback() && buffer.isPunktuator(EQUALS) && EqualityExpressionNoIn() ) || (
+			save.rollback() && buffer.isPunktuator(NOT_EQUALS) && EqualityExpressionNoIn() ) || (
+			save.rollback() && buffer.isPunktuator(STRICT_EQUALS) && EqualityExpressionNoIn() ) || (
+			save.rollback() && buffer.isPunktuator(STRICT_NOT_EQUALS) && EqualityExpressionNoIn() ) || (
+			save.rollback()
 		);
 	}
 	
 	private boolean BitwiseANDExpression() throws IOException, JsParseException {
+		if (!EqualityExpression()) {
+			return false;
+		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && EqualityExpression() && buffer.isPunktuator(AND) && BitwiseANDExpression() ) || (
-			save.rollback() && EqualityExpression()
+			save.rollback() && buffer.isPunktuator(AND) && BitwiseANDExpression() ) || (
+			save.rollback()
 		);
 	}
 	
 	private boolean BitwiseANDExpressionNoIn() throws IOException, JsParseException {
+		if (!EqualityExpressionNoIn()) {
+			return false;
+		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && EqualityExpressionNoIn() && buffer.isPunktuator(AND) && BitwiseANDExpressionNoIn() ) || (
-			save.rollback() && EqualityExpressionNoIn()
+			save.rollback() && buffer.isPunktuator(AND) && BitwiseANDExpressionNoIn() ) || (
+			save.rollback()
 		);
 	}
 	
 	private boolean BitwiseXORExpression() throws IOException, JsParseException {
+		if (!BitwiseANDExpression()) {
+			return false;
+		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && BitwiseANDExpression() && buffer.isPunktuator(XOR) && BitwiseXORExpression() ) || (
-			save.rollback() && BitwiseANDExpression()
+			save.rollback() &&  buffer.isPunktuator(XOR) && BitwiseXORExpression() ) || (
+			save.rollback()
 		);
 	}
 	
 	private boolean BitwiseXORExpressionNoIn() throws IOException, JsParseException {
+		if (!BitwiseANDExpressionNoIn()) {
+			return false;
+		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && BitwiseANDExpressionNoIn() && buffer.isPunktuator(XOR) && BitwiseXORExpressionNoIn() ) || (
-			save.rollback() && BitwiseANDExpressionNoIn()
+			save.rollback() && buffer.isPunktuator(XOR) && BitwiseXORExpressionNoIn() ) || (
+			save.rollback()
 		);
 	}
 	
 	private boolean BitwiseORExpression() throws IOException, JsParseException {
+		if (!BitwiseXORExpression()) {
+			return false;
+		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && BitwiseXORExpression() && buffer.isPunktuator(OR) && BitwiseORExpression() ) || (
-			save.rollback() && BitwiseXORExpression()
+			save.rollback() && buffer.isPunktuator(OR) && BitwiseORExpression() ) || (
+			save.rollback()
 		);
 	}
 	
 	private boolean BitwiseORExpressionNoIn() throws IOException, JsParseException {
+		if (!BitwiseXORExpressionNoIn()) {
+			return false;
+		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && BitwiseXORExpressionNoIn() && buffer.isPunktuator(OR) && BitwiseORExpressionNoIn() ) || (
-			save.rollback() && BitwiseXORExpressionNoIn()
+			save.rollback() && buffer.isPunktuator(OR) && BitwiseORExpressionNoIn() ) || (
+			save.rollback()
 		);
 	}
 	
 	private boolean LogicalANDExpression() throws IOException, JsParseException {
+		if (!BitwiseORExpression()) {
+			return false;
+		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && BitwiseORExpression() && buffer.isPunktuator(ANDAND) && LogicalANDExpression() ) || (
-			save.rollback() && BitwiseORExpression()
+			save.rollback() && buffer.isPunktuator(ANDAND) && LogicalANDExpression() ) || (
+			save.rollback()
 		);
 	}
 	
 	private boolean LogicalANDExpressionNoIn() throws IOException, JsParseException {
+		if (!BitwiseORExpressionNoIn()) {
+			return false;
+		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && BitwiseORExpressionNoIn() && buffer.isPunktuator(ANDAND) && LogicalANDExpressionNoIn() ) || (
-			save.rollback() && BitwiseORExpressionNoIn()
+			save.rollback() && buffer.isPunktuator(ANDAND) && LogicalANDExpressionNoIn() ) || (
+			save.rollback()
 		);
 	}
 	
 	private boolean LogicalORExpression() throws IOException, JsParseException {
+		if (!LogicalANDExpression()) {
+			return false;
+		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && LogicalANDExpression() && buffer.isPunktuator(OROR) && LogicalORExpression() ) || (
-			save.rollback() && LogicalANDExpression()
+			save.rollback() && buffer.isPunktuator(OROR) && LogicalORExpression() ) || (
+			save.rollback()
 		);
 	}
 	
 	private boolean LogicalORExpressionNoIn() throws IOException, JsParseException {
+		if (!LogicalANDExpressionNoIn()) {
+			return false;
+		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && LogicalANDExpressionNoIn() && buffer.isPunktuator(OROR) && LogicalORExpressionNoIn() ) || (
-			save.rollback() && LogicalANDExpressionNoIn()
+			save.rollback() && buffer.isPunktuator(OROR) && LogicalORExpressionNoIn() ) || (
+			save.rollback()
 		);
 	}
 	
 	private boolean ConditionalExpression() throws IOException, JsParseException {
+		if (!LogicalORExpression()) {
+			return false;
+		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && LogicalORExpression() && buffer.isPunktuator(QUESTION) && AssignmentExpression() && 
+			save.rollback() && buffer.isPunktuator(QUESTION) && AssignmentExpression() && 
 					buffer.isPunktuator(COLON) && AssignmentExpression() ) || (
-			save.rollback() && LogicalORExpression()
+			save.rollback()
 		);
 	}
 	
 	private boolean ConditionalExpressionNoIn() throws IOException, JsParseException {
+		if (!LogicalORExpressionNoIn()) {
+			return false;
+		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && LogicalORExpressionNoIn() && buffer.isPunktuator(QUESTION) && AssignmentExpression() && 
+			save.rollback() && buffer.isPunktuator(QUESTION) && AssignmentExpression() && 
 					buffer.isPunktuator(COLON) && AssignmentExpressionNoIn() ) || (
-			save.rollback() && LogicalORExpressionNoIn()
+			save.rollback()
 		);
 	}
 
 	private boolean AssignmentExpression() throws IOException, JsParseException {
 		SavePoint save = buffer.createSavePoint();
+		if (!LeftHandSideExpression()) {
+			save.rollback();
+			return ConditionalExpression();
+		}
+		SavePoint otherSave = buffer.createSavePoint();
 		return (
-			save.rollback() && ConditionalExpression() ) || (
-			save.rollback() && LeftHandSideExpression() && buffer.isPunktuator(ASSIGNMENT) && AssignmentExpression() ) || (
-			save.rollback() && LeftHandSideExpression() && AssignmentOperator() && AssignmentExpression()
+			otherSave.rollback() && buffer.isPunktuator(ASSIGNMENT) && AssignmentExpression() ) || (
+			otherSave.rollback() && AssignmentOperator() && AssignmentExpression() ) || (
+			save.rollback() && ConditionalExpression()
 		);
 	}
 
 	private boolean AssignmentExpressionNoIn() throws IOException, JsParseException {
 		SavePoint save = buffer.createSavePoint();
+		if (ConditionalExpressionNoIn()) {
+			return true;
+		}
+		
+		if (save.rollback() && !LeftHandSideExpression()) {
+			return false;
+		}
+		save = buffer.createSavePoint();
 		return (
-			save.rollback() && ConditionalExpressionNoIn() ) || (
-			save.rollback() && LeftHandSideExpression() && buffer.isPunktuator(ASSIGNMENT) && AssignmentExpressionNoIn() ) || (
-			save.rollback() && LeftHandSideExpression() && AssignmentOperator() && AssignmentExpressionNoIn()
+			save.rollback() && buffer.isPunktuator(ASSIGNMENT) && AssignmentExpressionNoIn() ) || (
+			save.rollback() && AssignmentOperator() && AssignmentExpressionNoIn()
 		);
 	}
 
 	private boolean AssignmentOperator() throws IOException, JsParseException {
-		SavePoint save = buffer.createSavePoint();
-		return (
-			save.rollback() && buffer.isPunktuator(ASSIGNMENT_MUL) ) || (
-			save.rollback() && buffer.isPunktuator(ASSIGNMENT_DIV) ) || (
-			save.rollback() && buffer.isPunktuator(ASSIGNMENT_MOD) ) || (
-			save.rollback() && buffer.isPunktuator(ASSIGNMENT_SUM) ) || (
-			save.rollback() && buffer.isPunktuator(ASSIGNMENT_SUB) ) || (
-			save.rollback() && buffer.isPunktuator(ASSIGNMENT_SHL) ) || (
-			save.rollback() && buffer.isPunktuator(ASSIGNMENT_SHR) ) || (
-			save.rollback() && buffer.isPunktuator(ASSIGNMENT_USHR) ) || (
-			save.rollback() && buffer.isPunktuator(ASSIGNMENT_AND) ) || (
-			save.rollback() && buffer.isPunktuator(ASSIGNMENT_XOR) ) || (
-			save.rollback() && buffer.isPunktuator(ASSIGNMENT_OR)
+		JsFlexToken token = buffer.next();
+		return token != null && (
+				token.isSame(ASSIGNMENT_MUL) || token.isSame(ASSIGNMENT_DIV) || token.isSame(ASSIGNMENT_MOD) || 
+				token.isSame(ASSIGNMENT_SUM) || token.isSame(ASSIGNMENT_SUB) || token.isSame(ASSIGNMENT_SHL) || 
+				token.isSame(ASSIGNMENT_SHR) || token.isSame(ASSIGNMENT_USHR) || token.isSame(ASSIGNMENT_AND) || 
+				token.isSame(ASSIGNMENT_XOR) || token.isSame(ASSIGNMENT_OR)
 		);
 	}
 

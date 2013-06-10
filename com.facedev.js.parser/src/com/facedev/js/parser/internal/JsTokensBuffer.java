@@ -26,7 +26,7 @@ class JsTokensBuffer {
 	
 	JsTokensBuffer(JsTokenizer tokenizer) throws IOException, JsParseException {
 		this.tokenizer = tokenizer;
-		next = new Node(tokenizer.next());
+		next = new Node(nextTerminal());
 	}
 	
 	/**
@@ -77,7 +77,7 @@ class JsTokensBuffer {
 	private JsFlexToken nextTerminal() throws IOException, JsParseException {
 		JsFlexToken next = tokenizer.next();
 		while (next != null && next.isIgnored()) {
-			if (next.isLineTerminator() && next != null) {
+			if (next.isLineTerminator() && this.next != null) {
 				this.next.terminated = true;
 			}
 			next = tokenizer.next();

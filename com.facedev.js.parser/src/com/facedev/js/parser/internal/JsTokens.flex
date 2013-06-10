@@ -159,12 +159,12 @@ HexDigit                      = [0-9a-fA-F]
 StringLiteral                 = ("\"" {DoubleStringCharacters}? "\"") |
                                 ("'" {SingleStringCharacters}? "'")
 DoubleStringCharacters        = {DoubleStringCharacter}+
-DoubleStringCharacter         = (([^\"\\]|{NotLineTerminator})) |
+DoubleStringCharacter         = ([^\"\\\r\n\u2028\u2029]) |
                                 ("\\" {EscapeSequence}) |
                                 {LineContinuation}
 
 SingleStringCharacters        = {SingleStringCharacter}+
-SingleStringCharacter         = (([^\'\\]|{NotLineTerminator})) |
+SingleStringCharacter         = (([^\'\\\r\n\u2028\u2029])) |
                                 ("\\" {EscapeSequence}) |
                                 ("\\0") |
                                 {LineContinuation}
