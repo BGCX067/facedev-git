@@ -176,7 +176,7 @@ EscapeSequence                = {CharacterEscapeSequence} |
                                 
 CharacterEscapeSequence       = {SingleEscapeCharacter} | {NonEscapeCharacter}
 SingleEscapeCharacter         = [\'\"\\bfnrtv]
-NonEscapeCharacter            = !({EscapeCharacter}|{LineTerminator})
+NonEscapeCharacter            = [^\'\"\\bfnrtv0-9xu\r\n\u2028\u2029]
 EscapeCharacter               = {SingleEscapeCharacter} | {DecimalDigit} | [xu]
 HexEscapeSequence             = "x" {HexDigit} {HexDigit}
 UnicodeEscapeSequence         = "u" {HexDigit} {HexDigit} {HexDigit} {HexDigit}

@@ -92,6 +92,8 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 		while (SourceElement()) {
 			save = buffer.createSavePoint();
 		}
+
+		System.out.println(buffer.getLastReturned() == null ? "?" : buffer.getLastReturned().getLine());
 		
 		return save.rollback();
 	}
@@ -240,8 +242,9 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 	}
 
 	private boolean IfStatement() throws IOException, JsParseException {
-		if (!(buffer.isKeyword(KEYWORD_IF) && buffer.isPunktuator(OPEN_BRACKET) && Expression() &&
-				buffer.isPunktuator(CLOSE_BRACKET) && Statement())) {
+		boolean isIf = buffer.isKeyword(KEYWORD_IF) && buffer.isPunktuator(OPEN_BRACKET) && Expression() &&
+				buffer.isPunktuator(CLOSE_BRACKET) && Statement();
+		if (!isIf) {
 			return false;
 		}
 		SavePoint save = buffer.createSavePoint();
@@ -405,7 +408,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 	}
 
 	private boolean TryStatement() throws IOException, JsParseException {
-		if (!buffer.isKeyword(KEYWORD_TRY) && Block()) {
+		if (!buffer.isKeyword(KEYWORD_TRY) || !Block()) {
 			return false;
 		}
 		SavePoint save = buffer.createSavePoint();
@@ -414,7 +417,8 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 			catchExists = false;
 			save.rollback();
 		}
-		return Finally() || catchExists;
+		save = buffer.createSavePoint();
+		return Finally() || (catchExists && save.rollback());
 	}
 
 	private boolean Catch() throws IOException, JsParseException {
@@ -451,10 +455,13 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 	}
 
 	private boolean ExpressionNoIn() throws IOException, JsParseException {
+		if (!AssignmentExpressionNoIn()) {
+			return false;
+		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && AssignmentExpressionNoIn() && buffer.isPunktuator(COMA) && ExpressionNoIn() ) || (
-			save.rollback() && AssignmentExpressionNoIn()
+			save.rollback() && buffer.isPunktuator(COMA) && ExpressionNoIn() ) || (
+			save.rollback()
 		);
 	}
 	
@@ -939,17 +946,15 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 
 	private boolean AssignmentExpressionNoIn() throws IOException, JsParseException {
 		SavePoint save = buffer.createSavePoint();
-		if (ConditionalExpressionNoIn()) {
-			return true;
+		if (!LeftHandSideExpression()) {
+			save.rollback();
+			return ConditionalExpressionNoIn();
 		}
-		
-		if (save.rollback() && !LeftHandSideExpression()) {
-			return false;
-		}
-		save = buffer.createSavePoint();
+		SavePoint otherSave = buffer.createSavePoint();
 		return (
-			save.rollback() && buffer.isPunktuator(ASSIGNMENT) && AssignmentExpressionNoIn() ) || (
-			save.rollback() && AssignmentOperator() && AssignmentExpressionNoIn()
+			otherSave.rollback() && buffer.isPunktuator(ASSIGNMENT) && AssignmentExpressionNoIn() ) || (
+			otherSave.rollback() && AssignmentOperator() && AssignmentExpressionNoIn() ) || (
+			save.rollback() && ConditionalExpressionNoIn()
 		);
 	}
 

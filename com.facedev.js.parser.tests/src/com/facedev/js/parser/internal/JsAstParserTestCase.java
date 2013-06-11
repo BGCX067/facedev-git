@@ -60,11 +60,21 @@ public class JsAstParserTestCase {
 	
 	@Test
 	public void testFnJqueryEq () throws IOException, JsParseException {
-		assertTrue(parseString("{ eq : function( i ) { \n" +
+		assertTrue(parseString("var i = { eq : function( i ) { \n" +
 		"var len = this.length,\n" +
 			"j = +i + ( i < 0 ? len : 0 );\n" +
 			"return this.pushStack( j >= 0 && j < len ? [ this[j] ] : [] );\n" +
-		"}}", getLogger()));
+		"}, next: 12}", getLogger()));
+		assertFalse(isCritical);
+	}
+	
+	@Test
+	public void testTryCatch() throws IOException, JsParseException {
+		assertTrue(parseString("try {\n" +
+			"	core_hasOwn.call();\n" +
+			"} catch ( e ) {\n" +
+			"	return false;\n" +
+			"}\n", getLogger()));
 		assertFalse(isCritical);
 	}
 	
@@ -77,6 +87,47 @@ public class JsAstParserTestCase {
 	@Test
 	public void testReturn() throws IOException, JsParseException {
 		assertTrue(parseString("return this.pushStack( j >= 0 && j < len ? [ this[j] ] : [] );\n", getLogger()));
+		assertFalse(isCritical);
+	}
+	
+	@Test
+	public void testOr() throws IOException, JsParseException {
+		assertTrue(parseString("var slice = 2,\n" +
+			"// Use a stripped-down indexOf if we can't use a native one\n" +
+			"indexOf = arr.indexOf || function( elem ) {\n" +
+			"var i = 0,\n" +
+			"len = this.length;\n" +
+			"for ( ; i < len; i++ ) {\n" +
+			"if ( this[i] === elem ) {\n" +
+			"return i;\n" +
+			"}\n" +
+			"}\n" +
+			"return -1;\n" +
+			"},\n" +
+			"booleans = 4;", getLogger()));
+		assertFalse(isCritical);
+	}
+	
+	@Test
+	public void testSizzle() throws IOException, JsParseException {
+		assertTrue(parse("com/facedev/js/parser/internal/resources/sizzle.js", getLogger()));
+		assertFalse(isCritical);
+	}
+	
+	@Test
+	public void testSizzleGetText() throws IOException, JsParseException {
+		assertTrue(parse("com/facedev/js/parser/internal/resources/sizzle_get_text.js", getLogger()));
+		assertFalse(isCritical);
+	}
+
+	@Test
+	public void testSelfCallingFnTryCatch () throws IOException, JsParseException {
+		assertTrue(parseString("(function( window, undefined ) { \n" + 
+				"try {\n" + 
+				"var i = 0;\n" +
+				"} catch (e) { \n" +
+				"}\n" +
+				"})( window );", getLogger()));
 		assertFalse(isCritical);
 	}
 

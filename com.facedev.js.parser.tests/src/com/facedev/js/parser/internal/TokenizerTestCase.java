@@ -194,6 +194,35 @@ public class TokenizerTestCase {
 		
 		assertNull(tokenizer.next());
 	}
+	
+	@Test 
+	public void testStringLiteralsCombined() throws IOException, JsParseException {
+		JsTokenizer tokenizer = new JsTokenizer(new StringReader(
+				"core_version = \"2.0.2\",core_concat = \",\""));
+		assertEquals("core_version", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("=", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("\"2.0.2\"", tokenizer.next().toString());
+		assertEquals(",", tokenizer.next().toString());
+		assertEquals("core_concat", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("=", tokenizer.next().toString());
+		assertTrue(tokenizer.next().isWhiteSpace());
+		assertEquals("\",\"", tokenizer.next().toString());
+		
+		assertNull(tokenizer.next());
+	}
+	
+	@Test
+	public void testStringLiteralsEscaped() throws IOException, JsParseException {
+		JsTokenizer tokenizer = new JsTokenizer(new StringReader(
+				"\"[\\x20\\t\\r\\n\\f]\",\"\""));
+		
+		assertEquals("\"[\\x20\\t\\r\\n\\f]\"", tokenizer.next().toString());
+		assertEquals(",", tokenizer.next().toString());
+		assertEquals("\"\"", tokenizer.next().toString());
+	}
 
 	@Test
 	public void testComments() throws JsParseException, IOException {
