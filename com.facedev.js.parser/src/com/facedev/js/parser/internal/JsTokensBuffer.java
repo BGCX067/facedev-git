@@ -17,16 +17,16 @@ import com.facedev.js.parser.Token;
  * @author alex.bereznevatiy@gmail.com
  *
  */
-class JsTokensBuffer {
+final class JsTokensBuffer {
 	
 	private JsTokenizer tokenizer;
 	
 	private Node next;
 	private Node lastReturned;
-	
+		
 	JsTokensBuffer(JsTokenizer tokenizer) throws IOException, JsParseException {
 		this.tokenizer = tokenizer;
-		next = new Node(nextTerminal());
+		this.next = new Node(nextTerminal());
 	}
 	
 	/**
@@ -76,9 +76,11 @@ class JsTokensBuffer {
 
 	private JsFlexToken nextTerminal() throws IOException, JsParseException {
 		JsFlexToken next = tokenizer.next();
+		Node prev = this.next;
+		
 		while (next != null && next.isIgnored()) {
-			if (next.isLineTerminator() && this.next != null) {
-				this.next.terminated = true;
+			if (next.isLineTerminator() && prev != null) {
+				prev.terminated = true;
 			}
 			next = tokenizer.next();
 		}
@@ -93,7 +95,7 @@ class JsTokensBuffer {
 	 */
 	boolean isKeyword(String keyword) throws IOException, JsParseException {
 		JsFlexToken tok = next();
-		return tok != null && tok.isKeyword() && tok.isSame(keyword);
+		return tok != null && tok.isSame(keyword);
 	}
 	
 	/**
@@ -181,7 +183,7 @@ class JsTokensBuffer {
 		return lastReturned != null && lastReturned.terminated;
 	}
 	
-	private static class Node {
+	private static final class Node {
 		private Node next;
 		private JsFlexToken token;
 		public boolean terminated;

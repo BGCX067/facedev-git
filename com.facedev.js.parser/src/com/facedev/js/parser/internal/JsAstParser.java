@@ -19,7 +19,13 @@ import com.facedev.js.parser.Token;
  * 
  * @author alex.bereznevatiy@gmail.com
  */
-class JsAstParser implements JsKeywords, JsPunctuators {
+final class JsAstParser implements JsKeywords, JsPunctuators {
+	
+	static {
+		Compiler.compileClass(JsAstParser.class);
+		Compiler.compileClass(JsTokensBuffer.class);
+		Compiler.compileClass(JsFlexToken.class);
+	}
 	
 	private final JsTokensBuffer buffer;
 	private final JsParseLogger logger;
@@ -86,7 +92,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 		if (FunctionBody() && buffer.isPunktuator(CLOSE_CURVY_BRACKET)) {
 			return true;
 		}
-		List<Token> errors = new LinkedList<Token>();
+		List<JsFlexToken> errors = new LinkedList<JsFlexToken>();
 		
 		do {
 			errors.add(buffer.getLastReturned());
@@ -130,22 +136,50 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 	
 	private boolean Statement() throws IOException, JsParseException {
 		SavePoint save = buffer.createSavePoint();
+		JsFlexToken tok = buffer.next();
+		if (tok == null) {
+			return false;
+		}
+		if (tok.isSame(OPEN_CURVY_BRACKET)) {
+			return save.rollback() && Block();
+		}
+		if (tok.isSame(KEYWORD_VAR)) {
+			return save.rollback() && VariableStatement();
+		}
+		if (tok.isSame(KEYWORD_IF)) {
+			return save.rollback() && IfStatement();
+		}
+		if (tok.isSame(KEYWORD_CONTINUE)) {
+			return save.rollback() && ContinueStatement();
+		}
+		if (tok.isSame(KEYWORD_BREAK)) {
+			return save.rollback() && BreakStatement();
+		}
+		if (tok.isSame(KEYWORD_RETURN)) {
+			return save.rollback() && ReturnStatement();
+		}
+		if (tok.isSame(KEYWORD_THROW)) {
+			return save.rollback() && ThrowStatement();
+		}
+		if (tok.isSame(KEYWORD_TRY)) {
+			return save.rollback() && TryStatement();
+		}
+		if (tok.isSame(KEYWORD_SWITCH)) {
+			return save.rollback() && SwitchStatement();
+		}
+		if (tok.isSame(SEMICOLON)) {
+			return save.rollback() && EmptyStatement();
+		}
+		if (tok.isSame(KEYWORD_WITH)) {
+			return save.rollback() && WithStatement();
+		}
+		if (tok.isSame(KEYWORD_DEBUGGER)) {
+			return save.rollback() && DebuggerStatement();
+		}
 		return (
-			save.rollback() && Block() ) || (
-			save.rollback() && VariableStatement() ) || (
-			save.rollback() && EmptyStatement() ) || (
-			save.rollback() && ExpressionStatement() ) || (
-			save.rollback() && IfStatement() ) || (
 			save.rollback() && IterationStatement() ) || (
-			save.rollback() && ContinueStatement() ) || (
-			save.rollback() && BreakStatement() ) || (
-			save.rollback() && ReturnStatement() ) || (
-			save.rollback() && WithStatement() ) || (
-			save.rollback() && LabelledStatement() ) || (
-			save.rollback() && SwitchStatement() ) || (
-			save.rollback() && ThrowStatement() ) || (
-			save.rollback() && TryStatement() ) || (
-			save.rollback() && DebuggerStatement()
+			save.rollback() && ExpressionStatement() ) || (
+			save.rollback() && LabelledStatement()
 		);
 	}
 
@@ -249,7 +283,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 
 	private boolean ExpressionStatement() throws IOException, JsParseException {
 		SavePoint save = buffer.createSavePoint();
-		Token next = buffer.next();
+		JsFlexToken next = buffer.next();
 		if (next == null || next.isSame(OPEN_CURVY_BRACKET) || next.isSame(KEYWORD_FUNCTION)) {
 			return false;
 		}
@@ -483,15 +517,26 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 	
 	private boolean PrimaryExpression() throws IOException, JsParseException {
 		SavePoint save = buffer.createSavePoint();
-		return (
- 			save.rollback() && buffer.isKeyword(KEYWORD_THIS)              ) || (
-			save.rollback() && buffer.isIdentifier()                     ) || (
-			save.rollback() && buffer.isLiteral()                        ) || (
-			save.rollback() && ArrayLiteral()                            ) || (
-			save.rollback() && ObjectLiteral()                           ) || (
-			save.rollback() && buffer.isPunktuator(OPEN_BRACKET) && 
-					Expression() && buffer.isPunktuator(CLOSE_BRACKET)                       
-		);
+		
+		JsFlexToken tok = buffer.next();
+		
+		if (tok.isSame(OPEN_BRACKET)) {
+			return Expression() && buffer.isPunktuator(CLOSE_BRACKET);
+		}
+		
+		if (tok.isSame(KEYWORD_THIS) || tok.isIdentifier() || tok.isLiteral()) {
+			return true;
+		}
+		
+		if (tok.isSame(OPEN_CURVY_BRACKET)) {
+			return save.rollback() && ObjectLiteral();
+		}
+		
+		if (tok.isSame(OPEN_SQUARE_BRACKET)) {
+			return save.rollback() && ArrayLiteral();
+		}
+		
+		return false;
 				
 	}
 
@@ -579,53 +624,49 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 		}
 		SavePoint save = buffer.createSavePoint();
 		
-		while ((buffer.isPunktuator(DOT) && buffer.isIdentifier()) ||
-				(save.rollback() && buffer.isPunktuator(OPEN_SQUARE_BRACKET) && 
-							Expression() && buffer.isPunktuator(CLOSE_SQUARE_BRACKET)) ||
-				(save.rollback() && Arguments())
-			) {
+		JsFlexToken tok = buffer.next();
+		
+		while (tok != null) {
+			if (tok.isSame(DOT)) {
+				if (!buffer.isIdentifier()) {
+					return save.rollback();
+				}
+			} else if (tok.isSame(OPEN_SQUARE_BRACKET)) {
+				if (!(Expression() && buffer.isPunktuator(CLOSE_SQUARE_BRACKET))) {
+					return save.rollback();
+				}
+				
+			} else if (tok.isSame(OPEN_BRACKET)) {
+				if (save.rollback() && !Arguments()) {
+					return save.rollback();
+				}
+			} else {
+				return save.rollback();
+			}
 			save = buffer.createSavePoint();
+			tok = buffer.next();
 		}
 		return save.rollback();
 	}
 	
 	private boolean SubMemberExpression() throws IOException, JsParseException {
 		SavePoint save = buffer.createSavePoint();
-		return (
-			save.rollback() && buffer.isKeyword(KEYWORD_NEW) && MemberExpression() && Arguments()) || (
-			save.rollback() && FunctionExpression() ) || (
-			save.rollback() && PrimaryExpression()
-		);
+		return PrimaryExpression() || (save.rollback() && FunctionExpression());
 	}
 	
 	private boolean NewExpression() throws IOException, JsParseException {
 		SavePoint save = buffer.createSavePoint();
-		return (
-			save.rollback() && buffer.isKeyword(KEYWORD_NEW) && NewExpression()) || (
-			save.rollback() && MemberExpression()
-		);
-	}
-	
-	private boolean CallExpression() throws IOException, JsParseException {
-		SavePoint save = buffer.createSavePoint();
-		if (!MemberExpression()) {
+		
+		if (!buffer.isKeyword(KEYWORD_NEW)) {
 			return false;
 		}
+		save.forward();
 		
-		while (MemberExpression()) {
-			save = buffer.createSavePoint();
+		while (buffer.isKeyword(KEYWORD_NEW)) {
+			save.forward();
 		}
 		
-		boolean result = false;
-		
-		while ((save.rollback() && Arguments()) || 
-				(save.rollback() && buffer.isPunktuator(DOT) && buffer.isIdentifier()) ||
-				(save.rollback() && buffer.isPunktuator(OPEN_SQUARE_BRACKET) && 
-						Expression() && buffer.isPunktuator(CLOSE_SQUARE_BRACKET))) {
-			result = true;
-			save = buffer.createSavePoint();
-		}
-		return result;	
+		return save.rollback() && MemberExpression();
 	}
 
 	private boolean Arguments() throws IOException, JsParseException {
@@ -655,10 +696,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 	private boolean LeftHandSideExpression() throws IOException, JsParseException {
 		SavePoint save = buffer.createSavePoint();
 		
-		return (
-			save.rollback() && NewExpression()) || (
-			save.rollback() && CallExpression()
-		);
+		return NewExpression() || (save.rollback() && MemberExpression());
 	}
 	
 	private boolean PostfixExpression() throws IOException, JsParseException {
@@ -687,18 +725,21 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 	private boolean UnaryExpression() throws IOException, JsParseException {
 		SavePoint save = buffer.createSavePoint();
 		
-		return (
-			save.rollback() && buffer.isKeyword(JsKeywords.KEYWORD_DELETE) && UnaryExpression() ) || (
-			save.rollback() && buffer.isKeyword(JsKeywords.KEYWORD_VOID) && UnaryExpression() ) || (
-			save.rollback() && buffer.isKeyword(JsKeywords.KEYWORD_TYPEOF) && UnaryExpression() ) || (
-			save.rollback() && buffer.isPunktuator(PLUSPLUS) && UnaryExpression() ) || (
-			save.rollback() && buffer.isPunktuator(MINUSMINUS) && UnaryExpression() ) || (
-			save.rollback() && buffer.isPunktuator(PLUS) && UnaryExpression() ) || (
-			save.rollback() && buffer.isPunktuator(MINUS) && UnaryExpression() ) || (
-			save.rollback() && buffer.isPunktuator(TILDA) && UnaryExpression() ) || (
-			save.rollback() && buffer.isPunktuator(EXCLAMATION) && UnaryExpression() ) || (
-			save.rollback() && PostfixExpression()
-			);
+		JsFlexToken tok = buffer.next();
+		
+		if (tok.isSame(JsKeywords.KEYWORD_DELETE) ||
+				tok.isSame(JsKeywords.KEYWORD_VOID) ||
+				tok.isSame(JsKeywords.KEYWORD_TYPEOF) ||
+				tok.isSame(PLUSPLUS) ||
+				tok.isSame(MINUSMINUS) ||
+				tok.isSame(PLUS) ||
+				tok.isSame(MINUS) ||
+				tok.isSame(TILDA) ||
+				tok.isSame(EXCLAMATION)) {
+			return UnaryExpression() || (save.rollback() && PostfixExpression());
+		}
+		
+		return save.rollback() && PostfixExpression();
 	}
 	
 	private boolean MultiplicativeExpression() throws IOException, JsParseException {
@@ -788,13 +829,23 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 		}
 		SavePoint save = buffer.createSavePoint();
 		
-		return (
-			save.rollback() && buffer.isPunktuator(EQUALS) && EqualityExpression() ) || (
-			save.rollback() && buffer.isPunktuator(NOT_EQUALS) && EqualityExpression() ) || (
-			save.rollback() && buffer.isPunktuator(STRICT_EQUALS) && EqualityExpression() ) || (
-			save.rollback() && buffer.isPunktuator(STRICT_NOT_EQUALS) && EqualityExpression() ) || (
-			save.rollback()
-		);
+		JsFlexToken tok = buffer.next();
+		
+		if (tok == null) {
+			return true;
+		}
+		
+		if ((
+				tok.isSame(EQUALS) ||
+				tok.isSame(NOT_EQUALS) ||
+				tok.isSame(STRICT_EQUALS) ||
+				tok.isSame(STRICT_NOT_EQUALS)) &&
+			
+				EqualityExpression()) {
+			
+			return true;
+		}
+		return save.rollback();
 	}
 	
 	private boolean EqualityExpressionNoIn() throws IOException, JsParseException {
@@ -818,7 +869,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && buffer.isPunktuator(AND) && BitwiseANDExpression() ) || (
+			buffer.isPunktuator(AND) && BitwiseANDExpression() ) || (
 			save.rollback()
 		);
 	}
@@ -829,7 +880,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && buffer.isPunktuator(AND) && BitwiseANDExpressionNoIn() ) || (
+			buffer.isPunktuator(AND) && BitwiseANDExpressionNoIn() ) || (
 			save.rollback()
 		);
 	}
@@ -840,7 +891,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() &&  buffer.isPunktuator(XOR) && BitwiseXORExpression() ) || (
+			buffer.isPunktuator(XOR) && BitwiseXORExpression() ) || (
 			save.rollback()
 		);
 	}
@@ -851,7 +902,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && buffer.isPunktuator(XOR) && BitwiseXORExpressionNoIn() ) || (
+			buffer.isPunktuator(XOR) && BitwiseXORExpressionNoIn() ) || (
 			save.rollback()
 		);
 	}
@@ -862,7 +913,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && buffer.isPunktuator(OR) && BitwiseORExpression() ) || (
+			buffer.isPunktuator(OR) && BitwiseORExpression() ) || (
 			save.rollback()
 		);
 	}
@@ -873,7 +924,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && buffer.isPunktuator(OR) && BitwiseORExpressionNoIn() ) || (
+			buffer.isPunktuator(OR) && BitwiseORExpressionNoIn() ) || (
 			save.rollback()
 		);
 	}
@@ -884,7 +935,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && buffer.isPunktuator(ANDAND) && LogicalANDExpression() ) || (
+			buffer.isPunktuator(ANDAND) && LogicalANDExpression() ) || (
 			save.rollback()
 		);
 	}
@@ -895,7 +946,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && buffer.isPunktuator(ANDAND) && LogicalANDExpressionNoIn() ) || (
+			buffer.isPunktuator(ANDAND) && LogicalANDExpressionNoIn() ) || (
 			save.rollback()
 		);
 	}
@@ -906,7 +957,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && buffer.isPunktuator(OROR) && LogicalORExpression() ) || (
+			buffer.isPunktuator(OROR) && LogicalORExpression() ) || (
 			save.rollback()
 		);
 	}
@@ -917,7 +968,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && buffer.isPunktuator(OROR) && LogicalORExpressionNoIn() ) || (
+			buffer.isPunktuator(OROR) && LogicalORExpressionNoIn() ) || (
 			save.rollback()
 		);
 	}
@@ -928,8 +979,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && buffer.isPunktuator(QUESTION) && AssignmentExpression() && 
-					buffer.isPunktuator(COLON) && AssignmentExpression() ) || (
+			buffer.isPunktuator(QUESTION) && AssignmentExpression() && buffer.isPunktuator(COLON) && AssignmentExpression() ) || (
 			save.rollback()
 		);
 	}
@@ -940,7 +990,7 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 		}
 		SavePoint save = buffer.createSavePoint();
 		return (
-			save.rollback() && buffer.isPunktuator(QUESTION) && AssignmentExpression() && 
+			buffer.isPunktuator(QUESTION) && AssignmentExpression() && 
 					buffer.isPunktuator(COLON) && AssignmentExpressionNoIn() ) || (
 			save.rollback()
 		);
@@ -953,13 +1003,14 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 			return ConditionalExpression();
 		}
 		SavePoint otherSave = buffer.createSavePoint();
-		return (
-			otherSave.rollback() && buffer.isPunktuator(ASSIGNMENT) && AssignmentExpression() ) || (
-			otherSave.rollback() && AssignmentOperator() && AssignmentExpression() ) || (
-			save.rollback() && ConditionalExpression()
-		);
+		
+		if (buffer.isPunktuator(ASSIGNMENT) || (otherSave.rollback() && AssignmentOperator())) {
+			return AssignmentExpression();
+		}
+		
+		return save.rollback() && ConditionalExpression();
 	}
-
+ 
 	private boolean AssignmentExpressionNoIn() throws IOException, JsParseException {
 		SavePoint save = buffer.createSavePoint();
 		if (!LeftHandSideExpression()) {

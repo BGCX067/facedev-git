@@ -82,6 +82,9 @@ public class JsAstParserTestCase {
 	public void testTernary () throws IOException, JsParseException {
 		assertTrue(parseString("var eq = +i + ( i < 0 ? len : 0 );", getLogger()));
 		assertFalse(isCritical);
+		
+		assertTrue(parseString("var eq = ([] = 3 ? 22 : 33);", getLogger()));
+		assertFalse(isCritical);
 	}
 	
 	@Test
