@@ -1,6 +1,7 @@
 package com.facedev.js.parser.internal;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.facedev.js.parser.JsKeywords;
@@ -74,9 +75,26 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 		if (!buffer.isIdentifier()) {
 			save.rollback();
 		}
+		// when we got this point it is function for sure.
+		// need to perform some optimizations because when error statement occurs it could slow down the parsing very match.
 		
-		return buffer.isPunktuator(OPEN_BRACKET) &&	FormalParameterListOpt() && buffer.isPunktuator(CLOSE_BRACKET) && 
-				buffer.isPunktuator(OPEN_CURVY_BRACKET) && FunctionBody() && buffer.isPunktuator(CLOSE_CURVY_BRACKET);
+		if (!(buffer.isPunktuator(OPEN_BRACKET) && FormalParameterListOpt() && buffer.isPunktuator(CLOSE_BRACKET) && buffer.isPunktuator(OPEN_CURVY_BRACKET))) {
+			logger.log(Message.SYNTAX_ERROR, buffer.getLastReturned());
+			return true;
+		}
+		
+		if (FunctionBody() && buffer.isPunktuator(CLOSE_CURVY_BRACKET)) {
+			return true;
+		}
+		List<Token> errors = new LinkedList<Token>();
+		
+		do {
+			errors.add(buffer.getLastReturned());
+		} while (buffer.hasNext() && !buffer.isPunktuator(CLOSE_CURVY_BRACKET));
+		
+		logger.log(Message.SYNTAX_ERROR, errors.toArray(new Token[errors.size()]));
+		
+		return true;
 	}
 
 	private boolean FunctionBody() throws IOException, JsParseException {
@@ -93,8 +111,6 @@ class JsAstParser implements JsKeywords, JsPunctuators {
 			save = buffer.createSavePoint();
 		}
 
-		System.out.println(buffer.getLastReturned() == null ? "?" : buffer.getLastReturned().getLine());
-		
 		return save.rollback();
 	}
 
