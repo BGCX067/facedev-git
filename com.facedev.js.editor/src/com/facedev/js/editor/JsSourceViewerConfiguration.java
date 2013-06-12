@@ -3,6 +3,8 @@ package com.facedev.js.editor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.TextAttribute;
+import org.eclipse.jface.text.contentassist.ContentAssistant;
+import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
@@ -11,8 +13,9 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 
 import com.facedev.js.editor.appearance.ColorManager;
-import com.facedev.js.editor.behavior.JsDefaultDamagerRepairer;
 import com.facedev.js.editor.behavior.DoubleClickStrategy;
+import com.facedev.js.editor.behavior.JsDefaultDamagerRepairer;
+import com.facedev.js.editor.content.JsContentAssistProcessor;
 import com.facedev.js.editor.syntax.JsCommentsScanner;
 import com.facedev.js.editor.syntax.JsDocsScanner;
 import com.facedev.js.editor.syntax.JsLiteralsScanner;
@@ -36,6 +39,8 @@ public class JsSourceViewerConfiguration extends SourceViewerConfiguration {
 	private ITokenScanner commentsScanner;
 	
 	private ITokenScanner literalsScanner;
+
+	private ContentAssistant assistant;
 	
 	@Override
 	public ITextDoubleClickStrategy getDoubleClickStrategy(
@@ -104,5 +109,20 @@ public class JsSourceViewerConfiguration extends SourceViewerConfiguration {
 			commentsScanner = new JsCommentsScanner();
 		}
 		return commentsScanner;
+	}
+	
+	@Override
+	public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
+		if (assistant == null) {
+	        assistant = new ContentAssistant();
+	        assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
+	        assistant.setContentAssistProcessor(new JsContentAssistProcessor(),
+	        		IDocument.DEFAULT_CONTENT_TYPE);
+	        assistant.enableAutoActivation(true);
+	        assistant.setAutoActivationDelay(500);
+	        assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
+	        assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
+	    }
+	    return assistant;
 	}
 }
