@@ -118,6 +118,7 @@ public class JsSourceViewerConfiguration extends SourceViewerConfiguration {
 	        assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
 	        assistant.setContentAssistProcessor(new JsContentAssistProcessor(),
 	        		IDocument.DEFAULT_CONTENT_TYPE);
+
 	        assistant.enableAutoActivation(true);
 	        assistant.setAutoActivationDelay(500);
 	        assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
