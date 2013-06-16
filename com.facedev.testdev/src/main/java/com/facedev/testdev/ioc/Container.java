@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentMap;
 import javax.servlet.ServletContext;
 
 import com.facedev.testdev.ioc.annotation.Controller;
+import com.facedev.testdev.ioc.annotation.FactoryMethod;
 import com.facedev.testdev.ioc.annotation.WebMethod;
 import com.facedev.testdev.security.SecurityManager;
 
@@ -87,10 +88,33 @@ public final class Container {
 	}
 
 	private Object instantiateBean(Class<?> clazz) throws Exception {
-		return clazz.newInstance();
-		
+		Method factory = findFactoryMethod(clazz);
+		if (factory == null) {
+			return clazz.newInstance();
+		}
+		try {
+			factory.setAccessible(true);
+			return factory.invoke(null);
+		} finally {
+			factory.setAccessible(false);
+		}
 	}
 	
+	private Method findFactoryMethod(Class<?> clazz) {
+		Method result = null;
+		for (Method method : clazz.getDeclaredMethods()) {
+			if (method.getAnnotation(FactoryMethod.class) == null) {
+				continue;
+			}
+			if (result != null) {
+				throw new ContainerException(
+						"More than one factory method in the class: " + clazz);
+			}
+			result = method;
+		}
+		return result;
+	}
+
 	private class BeanLoadingChain {
 		
 		private final BeanLoadingChain next;
