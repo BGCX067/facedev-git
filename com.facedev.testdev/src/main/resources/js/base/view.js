@@ -13,7 +13,8 @@ FD.ns('FD.View', FD.extend({
 			result = [parts[0], parts[1]||'&', val, parts[3]||''];
 
 		location.hash = result.join('');
-	}
+	},
+	clean: noFn
 },
 
 function(name){
@@ -23,6 +24,7 @@ function(name){
 (function () {
 	var registry = {},
 		defaultView = null,
+		currentView = null,
 		register = function(vw, dflt) {
 			if (registry[vw._nm]) {
 				console.log(vw._nm);
@@ -33,7 +35,12 @@ function(name){
 			}
 		},
 		render = function(name) {
-			(name ? registry[name]||defaultView : defaultView).render();
+			var vw = name ? registry[name]||defaultView : defaultView;
+			if (currentView !== vw) {
+				if (currentView) currentView.clean();
+				currentView = vw;
+				vw.render();
+			}
 		},
 		synch = function() {
 			var parts = fd_view_regex.exec(location.hash);
@@ -41,6 +48,7 @@ function(name){
 		};
 	
 	FD.ns('FD.View.render', render);
+	FD.ns('FD.View.current', function() { return currentView; });
 	FD.ns('FD.View.register', register);
 	FD.ns('FD.View.synch', synch);
 })();

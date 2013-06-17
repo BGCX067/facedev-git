@@ -1,10 +1,28 @@
-FD.View.register(new (FD.extend(FD.View, function() {
+(function() {
+
+var trackerHome = FD.extend(FD.View, function() {
 	this.sup.call(this, 'tracker.home');
+	this._mEl = $('#homeItem'),
+	this._htm = this._mEl.html();
 }, {
 	render: function() {
-		this.sup.render.call(this);
-		console.log('yep!: ' + this._nm);
+		var me = this,
+			el = me._mEl;
+		
+		me.sup.render.call(me);
+		el.html(el.children(":first").html());
+	},
+	clean: function() {
+		var me = this;
+		me.sup.clean.call(me);
+		
+		me._mEl.html(me._htm);
 	}
-}))(), true);
+});
 
-$(document).ready(FD.View.synch);
+$(function() {
+	FD.View.register(new trackerHome(), true);
+	FD.View.synch();
+});
+
+})();
