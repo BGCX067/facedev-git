@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="project" default="js-concat-tracker">
+
+    <target name="js-concat-tracker">
+        <concat destfile="${basedir}/../../webapp/js/tracker.js">
+        	<header>
+        		(function(window ,undefined) {
+        			'use strict';
+        			var document = window.document,
+        				location = window.location;
+        		
+        		 
+        	</header>
+        	<filelist dir="${basedir}">
+        		<file name="base/base.js"/>
+        		<file name="base/view.js"/>
+        		<file name="tracker/home/home.js"/>
+        	</filelist>
+        	<footer>
+        		})(window);
+        	</footer>
+        </concat>
+    </target>
+
+</project>
