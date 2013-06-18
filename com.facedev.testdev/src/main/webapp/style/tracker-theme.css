@@ -1,0 +1,27 @@
+#header, #navigation { border-bottom: 2px solid #FFA305; }
+
+#footer { border-top: 2px solid #FFA305; height: 28px; }
+
+#contentRight { border: 2px solid #FFA305; border-radius: 7px 0 0 7px; } 
+
+#contentRight { position: relative; top:-25px; }
+
+#navigation, #contentRight { background-color: #fafafa; }
+
+#navigation { padding: 3px; }
+
+#searchItem, #navigation { height:22px; }
+
+#loginForm { padding: 10px; }
+
+#loginForm form div { padding-bottom: 10px; }
+
+#email, #pwd { width: 150px; float: right; }
+
+#submit { padding: 1px 20px 3px 20px; margin-left: 75px; }
+
+#searchItem { padding-right:20px; }
+
+#search { width: 250px; }
+
+#searchTip { padding: 3px; font: 12px Georgia, serif; color: #999; }

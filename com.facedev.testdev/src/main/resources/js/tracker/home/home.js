@@ -1,27 +1,32 @@
 (function() {
 
-var trackerHome = FD.extend(FD.View, function() {
-	this.sup.call(this, 'tracker.home');
-	this._mEl = $('#homeItem'),
-	this._htm = this._mEl.html();
+var TrackerHome = FD.extend(FD.Track.View, function() {
+	TrackerHome.supr.constructor.call(this, 'tracker.home', '#homeItem');
 }, {
 	render: function() {
 		var me = this,
-			el = me._mEl;
+			vw = me._vw;
+		TrackerHome.supr.render.call(me);
+		if (me._lay) {
+			me._lay.show();
+			return;
+		}
 		
-		me.sup.render.call(me);
-		el.html(el.children(":first").html());
+		me._lay = new FD.Track.HomeLayout();
+		
+		me._lay.render(vw);
 	},
 	clean: function() {
 		var me = this;
-		me.sup.clean.call(me);
-		
-		me._mEl.html(me._htm);
+		TrackerHome.supr.clean.call(me);
+		if (me._lay) me._lay.hide();
 	}
 });
 
+FD.View.register(new TrackerHome(), true);
+
 $(function() {
-	FD.View.register(new trackerHome(), true);
+	FD.View.init();
 	FD.View.synch();
 });
 

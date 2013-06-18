@@ -1,6 +1,14 @@
 var noFn = function(){},
 	console = window.console || {
-	log: noFn
+		log: noFn
+	},
+	isIE = (window.navigator.appName.indexOf("Internet Explorer")!=-1);
+
+Function.prototype.delay = function(delay, scope) {
+	var me = this;
+	setTimeout(function() {
+		me.call(scope);
+	}, delay);
 };
 
 var FD = window.FD = (function() {
@@ -14,24 +22,15 @@ var FD = window.FD = (function() {
 			}
 		},
 		extend: function(superClass, construct, props) {
-			if (typeof(construct) !== 'function') {
-				props = construct||props;
-				construct = undefined;
-			}
-			
-			var res = function() {
-				this.sup = superClass;
-				if (construct) construct.apply(this, arguments);
-				if (props) FD.copy(this, props);
-			};
-			
 			var fn = function(){};
-			fn.prototype = superClass.prototype;
-			res.prototype = new fn();
-			res.prototype.constructor = res;
-			res.sup = superClass.prototype;
+			fn.prototype = superClass.prototype; 
+			construct.prototype = new fn();
+			construct.prototype.constructor = construct;
+			construct.supr = superClass.prototype;
 			
-			return res;
+			if (props) FD.copy(construct.prototype, props, true);
+			
+			return construct;
 		},
 		
 		ns: function(name, def) {

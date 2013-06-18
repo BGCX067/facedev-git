@@ -4,22 +4,39 @@
 	<meta charset="UTF-8">
 	<title>Facedev IDE : Tracker</title>
 	<link rel="stylesheet" href="../style/tracker.css"/>
-	<script type="text/javascript" src="../js/jquery-1.10.1.js"></script>
+	<link rel="stylesheet" href="../style/tracker-theme.css"/>
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
 	<script type="text/javascript" src="../js/tracker.js"></script>
+	<!-- <script type="text/javascript" src="../js/tracker-secure.js"></script> -->
 </head>
 <body>
-	<div id="header">Header</div>
 	<div id="content">
-		<div id="content-right">Content right</div>
-		<div id="content-center">
-			<div id="navigation">
-				<span id="homeItem"><a href="#">Home</a></span>
-				<span id="bugsItem"><a href="#">Bugs</a></span>
-				<a href="#">Tests</a>
-				<a href="#">Ideas</a>
-				<a href="#">Requirements</a>
+		<div id="header">Header</div>
+		<div id="contentRight">
+			<div id="loginForm">
+				<form>
+					<div>Email: <input type="text" id="email" name="email"/></div>
+					<div>Password: <input type="password" id="pwd" name="pwd"/></div>
+					<div><input type="button" id="submit" value="Login"/></div>
+				</form>
 			</div>
-			<div></div>
+			<div id="userInfo">
+			</div>
+		</div>
+		<div id="contentCenter">
+			<div id="navigation">
+				<span id="homeItem">Home</span>
+				<span id="bugsItem">Bugs</span>
+				<span id="testsItem">Tests</span>
+				<span id="ideasItem">Ideas</span>
+				<span id="rqsItem">Requirements</span>
+				
+				<div id="searchItem">
+					<div id="searchTip">Please, enter search string and press Enter</div>
+					<input type="text" id="search"/>
+				</div>
+			</div>
+			<div id="viewPort"></div>
 		</div>
 	</div>
 	<div id="footer">Footer</div>

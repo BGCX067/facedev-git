@@ -15,12 +15,35 @@
         	<filelist dir="${basedir}">
         		<file name="base/base.js"/>
         		<file name="base/view.js"/>
+        		<file name="base/layout.js"/>
+        		<file name="tracker/view.js"/>
+        		<file name="tracker/search.js"/>
+        		<file name="tracker/bugs/bugs.js"/>
+        		<file name="tracker/home/layout.js"/>
         		<file name="tracker/home/home.js"/>
         	</filelist>
         	<footer>
-        		})(window);
+        		})(this);
         	</footer>
         </concat>
+    	<concat destfile="${basedir}/../../webapp/js/tracker-secure.js">
+    		<header>
+        		(function(window ,undefined) {
+        			'use strict';
+        			var document = window.document,
+        				location = window.location;
+        		
+    			
+        	</header>
+    		<filelist dir="${basedir}">
+	    		<file name="tracker/ideas/ideas.js"/>
+	    		<file name="tracker/requirements/requirements.js"/>
+	    		<file name="tracker/tests/tests.js"/>
+    		</filelist>
+    		<footer>
+        		})(this);
+        	</footer>
+    	</concat>
     </target>
 
 </project>
