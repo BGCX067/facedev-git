@@ -16,12 +16,14 @@
 
 #loginForm form div { padding-bottom: 10px; }
 
-#email, #pwd { width: 150px; float: right; }
+#email, #pwd { width: 125px; float: right; }
 
 #submit { padding: 1px 20px 3px 20px; margin-left: 75px; }
 
 #searchItem { padding-right:20px; }
 
-#search { width: 250px; }
+#search { width: 300px; }
 
-#searchTip { padding: 3px; font: 12px Georgia, serif; color: #999; }
+#searchTip { padding: 5px; font: 12px Georgia, serif; color: #999; }
+
+.chart { border: 1px solid #FFA305; font: 12px serif; color: #999; }
