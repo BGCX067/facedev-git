@@ -26,4 +26,6 @@
 
 #searchTip { padding: 5px; font: 12px Georgia, serif; color: #999; }
 
-.chart { border: 1px solid #FFA305; font: 12px serif; color: #999; }
+.chart { border: 1px solid #FFA305; font: 12px serif; color: #999; overflow:hidden; }
+
+.chartMessage { position: relative; text-align:center; }
