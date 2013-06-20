@@ -1,7 +1,7 @@
 
 var fd_view_regex = /([\#\&])vw\=([^\&]*)/gi;
 
-FD.ns('FD.View', FD.extend({},
+FD.ns('FD.View', FD.extend(FD.Base,
 
 function(name){
 	this._nm = name;

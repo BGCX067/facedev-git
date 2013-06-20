@@ -17,8 +17,10 @@
         		<file name="base/view.js"/>
         		<file name="base/layout.js"/>
         		<file name="base/chart.js"/>
+        		<file name="base/grid.js"/>
         		<file name="tracker/view.js"/>
         		<file name="tracker/search.js"/>
+        		<file name="tracker/bugs/layout.js"/>
         		<file name="tracker/bugs/bugs.js"/>
         		<file name="tracker/home/layout.js"/>
         		<file name="tracker/home/home.js"/>

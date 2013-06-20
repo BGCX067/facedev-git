@@ -13,6 +13,7 @@ Function.prototype.delay = function(delay, scope) {
 
 var FD = window.FD = (function() {
 	return {
+		Base: {},
 		copy: function(target, src, over) {
 			for (var k in src) {
 				if (target[k] !== undefined && !over) {

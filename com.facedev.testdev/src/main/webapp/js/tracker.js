@@ -20,6 +20,7 @@ Function.prototype.delay = function(delay, scope) {
 
 var FD = window.FD = (function() {
 	return {
+		Base: {},
 		copy: function(target, src, over) {
 			for (var k in src) {
 				if (target[k] !== undefined && !over) {
@@ -58,7 +59,7 @@ var FD = window.FD = (function() {
 }) ();
 var fd_view_regex = /([\#\&])vw\=([^\&]*)/gi;
 
-FD.ns('FD.View', FD.extend({},
+FD.ns('FD.View', FD.extend(FD.Base,
 
 function(name){
 	this._nm = name;
@@ -123,16 +124,53 @@ function(name){
 (function() {
 	
 var managers = {
+	
 	flow: function(cn, el, cfg) {
 		if (!cn) cn = $('<div>');
 		if (el === undefined) return cn;
 		el.css('float', cfg||'left');
 		cn.append(el);
 		return cn;
+	},
+	borderSpec: {
+		south: function(cn, el) {
+			el.css({
+				
+			});
+			cn.before(el);
+		},
+		center: function(cn, el) {
+			el.css('height', '100%');
+			cn.append(el);
+		},
+		north: function(cn, el) {
+			cn.prepend(el);
+		},
+		east: function(cn, el) {
+			el.css('float', 'right');
+			var ch = cn.children();
+			if (ch.length)ch.first().after(el);
+			else cn.append(el);
+		},
+		west: function(cn, el) {
+			el.css('float', 'left');
+			var ch = cn.children();
+			if (ch.length)ch.first().after(el);
+			else cn.append(el);
+		}
+	},
+	border: function(cn, el, cfg) {
+		if (!cn) {
+			cn = $('<div>');
+			cn.css('height', '100%');
+		}
+		if (el === undefined) return cn;
+		this.borderSpec[cfg](cn, el);
+		return cn;
 	}
 };
 
-FD.ns('FD.Layout', FD.extend({}, function(cfg) {
+FD.ns('FD.Layout', FD.extend(FD.Base, function(cfg) {
 	if (!cfg || typeof(cfg) === 'string') {
 		cfg = {mgr: cfg};
 	} 
@@ -153,13 +191,13 @@ FD.ns('FD.Layout', FD.extend({}, function(cfg) {
 	
 	render: function(to) {
 		var me = this;
-		if (!me._cn) me._cn = me._mgr();
+		if (!me._cn) me._cn = me._mgr.call(managers);
 		to.append(me._cn);
 	},
 	
 	add: function(el, cfg) {
 		var me = this;
-		me._cn = me._mgr(me._cn, el, cfg);
+		me._cn = me._mgr.call(managers, me._cn, el, cfg);
 	}
 }));
 
@@ -167,6 +205,15 @@ FD.ns('FD.Layout', FD.extend({}, function(cfg) {
 	
 var renderers = {
 	line: function(data, ctx, width, height) {
+		if (!data) {
+			ctx.message("No data to display");
+			return;
+		}
+		var cfg = {};
+		if (!data.length) {
+			cfg = data;
+			data = cfg.data;
+		}
 		if (!data || !data.length) {
 			ctx.message("No data to display");
 			return;
@@ -188,24 +235,56 @@ var renderers = {
 		if (maxX <= minX) maxX = minX + 1;
 		if (maxY <= minY) maxX = minY + 1;
 		
-		var pad = 5,
+		var pad = cfg.padding||5,
 			xPad = 35,
 			yPad = 30,
 			w = width - yPad - pad,
 			h = height - xPad - pad,
+			numX = cfg.labelX && cfg.labelX.length ? cfg.labelX.length : min(6, max(2, maxX - minX)),
+			numY = cfg.labelY && cfg.labelY.length ? cfg.labelY.length : min(6, max(2, maxY - minY)),
+			axisText = function(i, len, maxAxis, minAxis) {
+				return Math.ceil(((maxAxis - minAxis) * i / len) + minAxis);
+			},
+			xText = function(i, len) {
+				if (typeof(cfg.labelX) === 'function') {
+					return cfg.labelX(i, len, function(i, len) {
+						return axisText(i, len, maxX, minX);
+					});
+				}
+				if (cfg.labelX && i < cfg.labelX.length) {
+					return cfg.labelX[i];
+				}
+				return axisText(i, len, maxX, minX); 
+			},
+			yText = function(i, len) {
+				i = len - i - 1;
+				if (typeof(cfg.labelY) === 'function') {
+					return cfg.labelY(i, len, function(i, len) {
+						return axisText(i, len, maxY, minY);
+					});
+				}
+				if (cfg.labelY && i < cfg.labelY.length) {
+					return cfg.labelY[i];
+				}
+				return axisText(i, len, maxY, minY);
+			},
+			textColor = '#111',
 			axisX = function() {
 				var y = h + pad,
 					maxX = yPad + w;
-				ctx.line(yPad, y, maxX, y, '#111');
-				for (var x = yPad; x <= maxX; x += w/5) {
-					ctx.line(x, y, x, y + 3, '#111');
+				ctx.line(yPad, y, maxX, y, textColor);
+				for (var x = yPad, v = 0; x <= maxX; x += w/(numX - 1), v++) {
+					ctx.line(x, y, x, y + 3, textColor);
+					var txt = ''+xText(v, numX);
+					ctx.text(x - txt.length * 4, y + 15, xText(v, numX), textColor);
 				}
 			},
 			axisY = function() {
 				var maxY = h + pad;
-				ctx.line(yPad, pad, yPad, maxY, '#111');
-				for (var y = pad; y < maxY; y+= h / 5) {
-					ctx.line(yPad, y, yPad - 3, y, '#111');
+				ctx.line(yPad, pad, yPad, maxY, textColor);
+				for (var y = pad, v = 0; y <= maxY; y+= h / (numY - 1), v++) {
+					ctx.line(yPad, y, yPad - 3, y, textColor);
+					ctx.text(2, y + 5, yText(v, numY), textColor);
 				}
 			},
 			scaleX = function(v) {
@@ -234,94 +313,32 @@ var renderers = {
 	}
 };
 
-var canvasMessage = function(txt, el) {
-	var div = el.find('div.chartMessage');
-	if (!div.length) {
-		div = $('<div>').addClass('chartMessage').css('top',isIE ? '45%' : '-55%');
-		el.append(div);
-	}
-	div.html(txt);
-};
-
 var getCanvas = (!window.CanvasRenderingContext2D ? function(el) {
-	var pseudoCanvas = $('<div>').css({
-		position:'absolute',
-		width: el.css('width'),
-		height: el.css('height')
-	});
-	el.empty().append(pseudoCanvas);
+	var div = $('<div>').addClass('chartMessage').css('top', '45%');
+	div.html("Your browser doesn't support charts");
+	el.empty().append(div);
 	return {
-		point: function(x, y, color) {
-			var pt = $('<div>').css({
-				background: (color||'red'),
-				position: 'absolute',
-				top: y+'px', left: x+'px', 
-				width: '1px', height: '1px'
-			});
-			pseudoCanvas.append(pt);
-		},
-		line: function(x0, y0, x1, y1, color) {
-
-			if (x0 > x1) {
-				var tmp = x0;
-				x0 = x1;
-				x1 = tmp;
-				tmp = y0;
-				y0 = y1;
-				y1 = tmp;
-			}
-			color = color||'red';
-			var prevX = x0, prevY = y0;
-			for (var x = x0, y = y0;
-				x <= x1; x++) {
-				if (x == x1) {
-					y = y1;
-				} else {
-					y = Math.floor(((x - x0) * (y1 - y0) / (x1 - x0)) + y0);
-					if (y == prevY) {
-						continue;
-					}
-				}
-				var w = x - prevX,
-					h = y - prevY,
-					top = prevY;
-				if (h < 0) {
-					h = -h;
-					top = y;
-				}
-				if (!w) w = 1;
-				if (!h) h = 1;
-				
-				pseudoCanvas.append($('<div>').css({
-					background: color,
-					position: 'absolute',
-					top: top+'px', left: prevX+'px', 
-					width: w + 'px', height: h + 'px'
-				}));
-				prevX = x, prevY = y;
-			}
-		},
-		rect: function() {},
-		clear: function() {
-			pseudoCanvas.empty();
-		},
-		message:  function(txt) {
-			canvasMessage(txt, el);
-		}
+		point: noFn,
+		line: noFn,
+		text: noFn,
+		rect: noFn,
+		clear: noFn,
+		message: noFn
 	};
 } : function(el) {
 	var canvas = $('<canvas>')
 			.attr('width', el.width())
 			.attr('height', el.height()),
-		context = canvas.get(0).getContext('2d');
+		context = canvas.get(0).getContext('2d'),
+		defaultColor = '#000';
 	el.empty().append(canvas);
 	return {
 		point: function(x, y, color) {
-			context.fillStyle = color||'red';
+			context.fillStyle = color||defaultColor;
 			context.fillRect(x, y, 1, 1);
 		},
 		line: function(x0, y0, x1, y1, color) {
-			context.strokeStyle = color||'red';
+			context.strokeStyle = color||defaultColor;
 			context.beginPath();
 			context.moveTo(x0, y0);
 			context.lineTo(x1, y1);
@@ -329,11 +346,21 @@ var getCanvas = (!window.CanvasRenderingContext2D ? function(el) {
 			context.stroke();
 		},
 		rect: function() {},
+		text: function(x, y, text, color, fnt, maxW) {
+			context.font = fnt||"12px serif";
+			context.fillStyle = color||defaultColor;
+			context.fillText(text, x, y, maxW||(el.width()-x));
+		},
 		clear: function() {
 			context.clearRect(0, 0, el.width(), el.height());
 		},
 		message: function(txt) {
-			canvasMessage(txt, el);
+			var div = el.find('div.chartMessage');
+			if (!div.length) {
+				div = $('<div>').addClass('chartMessage').css('top',isIE ? '45%' : '-55%');
+				el.append(div);
+			}
+			div.html(txt);
 		}
 	};
 });
@@ -344,7 +371,7 @@ function redraw(el, data, type) {
 	renderer(data, canvas, el.width(), el.height());
 };
 	
-FD.ns('FD.Chart', FD.extend({}, function(cfg, data) {
+FD.ns('FD.Chart', FD.extend(FD.Base, function(cfg, data) {
 	if (typeof(cfg) === 'string') {
 		cfg = { type : cfg };
 	}
@@ -363,19 +390,28 @@ FD.ns('FD.Chart', FD.extend({}, function(cfg, data) {
 			width: cfg.w,
 			height: cfg.h,
 		});
-		canvasMessage('Initializing...', me._el);
 		to.append(me._el);
-		if(me._data) redraw(me._el, me._data, me._type);
+		redraw(me._el, me._data, me._type);
 	},
 	
 	update: function(data) {
 		var me = this;
-		if (data) me._data = data;
+		if (data !== undefined) me._data = data;
 		redraw(me._el, me._data, me._type);
 	}
 }));
 
-})();FD.ns('FD.Track.View', FD.extend(FD.View, function(name, selector) {
+})();FD.ns('FD.Grid', FD.extend(FD.Base, function(cfg, data) {
+}, {
+	render: function(to) {
+		to.html('<table>'+
+			'<tr><td>1</td><td>2</td><td>3</td></tr>'+
+			'<tr><td>1</td><td>2</td><td>3</td></tr>'+
+			'<tr><td>1</td><td>2</td><td>3</td></tr>'+
+			'<tr><td>1</td><td>2</td><td>3</td></tr>'+
+			'</table>');
+	}
+}));FD.ns('FD.Track.View', FD.extend(FD.View, function(name, selector) {
 	FD.Track.View.supr.constructor.call(this, name);
 	this._sel = selector;
 }, {
@@ -428,10 +464,48 @@ FD.ns('FD.Chart', FD.extend({}, function(cfg, data) {
 	el.blur(function() {
 		if (!el.val()) tip.show();
 	});
-});(function() {
+});FD.ns('FD.Track.BugsLayout', FD.extend(FD.Layout, function() {
+	FD.Track.HomeLayout.supr.constructor.call(this, 'border');
+	
+	var toolbar = $('<div>').css({
+		height: '50px', 
+		background: '#faa'
+	}).html('Toolbar');
+	this.add(toolbar, 'north');
+	
+	var list = $('<div>').css({
+		background: '#afa'
+	}).html('List of bugs');
+	
+	var bugsGrid = new FD.Grid();
+	bugsGrid.render(list);
+	
+	this.add(list, 'center');
+}));(function() {
 
 var TrackerBugs = FD.extend(FD.Track.View, function() {
 	TrackerBugs.supr.constructor.call(this, 'tracker.bugs', '#bugsItem');
+}, {
+
+	render: function() {
+		var me = this,
+			vw = me._vw;
+		TrackerBugs.supr.render.call(me);
+		if (me._lay) {
+			me._lay.show();
+			return;
+		}
+		
+		me._lay = new FD.Track.BugsLayout();
+		
+		me._lay.render(vw);
+	},
+	clean: function() {
+		var me = this;
+		TrackerBugs.supr.clean.call(me);
+		if (me._lay) me._lay.hide();
+	}
+	
 });
 
 FD.View.register(new TrackerBugs());
@@ -439,34 +513,28 @@ FD.View.register(new TrackerBugs());
 })();FD.ns('FD.Track.HomeLayout', FD.extend(FD.Layout, function() {
 	FD.Track.HomeLayout.supr.constructor.call(this);
 	
-	var chart = new FD.Chart('line', [
-	       {x: 100, y: [3000, 4000]},
-	       {x: 200, y: [6000, 2000]},
-	       {x: 300, y: [18000, 3000]},
-	       {x: 400, y: [20000, 8000]},
-	       {x: 500, y: [10000, 12000]},
-	       {x: 600, y: [5000, 15000]}
-	    ]),
+	var chart = new FD.Chart({
+			type:'line',
+			width: 400,
+			height: 300
+		}, {
+			padding: 10,
+			labelY:['0', '5k', '10k', '15k', '20k'],
+			data: [
+		       {x: 100, y: [3000, 4000]},
+		       {x: 200, y: [6000, 2000]},
+		       {x: 300, y: [18000, 3000]},
+		       {x: 400, y: [20000, 8000]},
+		       {x: 500, y: [10000, 12000]},
+		       {x: 600, y: [5000, 15000]}
+	       ]
+		}),
 		container = $('<div>').css({
 			padding: '10px',
 			background: '#fff'
 		});
 	chart.render(container);
 	this.add(container);
-	
-//	var d2 = $('<div>').css({
-//		width: '700px',
-//		height: '400px', 
-//		background: '#faa',
-//	}).html('Ehehda jfas ;fjas; dja;slkjd f;asjdf;ajs d;fjas;dfjas; dfjas');
-//	this.add(d2);
-//	
-//	var d3 = $('<div>').css({
-//		width: '600px',
-//		height: '300px',
-//		background: '#afa',
-//	}).html('eiowtroisdfgasl asdlkj flkas asdflk fjalsdj f;asj df;asj ;fla');
-//	this.add(d3);
 }));(function() {
 
 var TrackerHome = FD.extend(FD.Track.View, function() {
