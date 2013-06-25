@@ -26,6 +26,18 @@
 
 #searchTip { padding: 5px; font: 12px Georgia, serif; color: #999; }
 
-.chart { border: 1px solid #FFA305; font: 12px serif; color: #999; overflow:hidden; }
+.chart, .grid { border: 1px solid #FFA305; font: 12px serif; }
+
+.chart { color: #999; overflow:hidden; }
 
 .chartMessage { position: relative; text-align:center; }
+
+.grid { border-collapse: collapse;}
+
+.gridHeaderFirst, .gridHeader { border-bottom: 1px solid #FFA305; background-color: #eee; padding:3px; }
+
+.gridHeader { border-left: 1px solid #FFA305;' }
+
+.gridCell, .gridCellDark { font: 12px serif; }
+
+.gridCellDark { background-color: #fafafa; }
